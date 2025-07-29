@@ -11,4 +11,5 @@
 export type RootStackParamList = {
   Splash: undefined; // The Splash screen requires no parameters.
   Home: undefined; // The Home screen requires no parameters.
+  Main: undefined; // Represents the entire main section of the app with the Tab Navigator.
 };

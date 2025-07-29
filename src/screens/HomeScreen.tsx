@@ -8,7 +8,7 @@
  */
 
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, Button} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types/navigation';
 
@@ -19,10 +19,16 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   // 🚀 Log when the component mounts.
   console.log('🚀 HomeScreen: Component mounted');
 
+  const handleGoToMainApp = () => {
+    console.log('🚀 HomeScreen: Navigating to Main tab navigator...');
+    navigation.navigate('Main');
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Bebeğim!</Text>
       <Text style={styles.subtitle}>This is the Home Screen.</Text>
+      <Button title="Go to Main App" onPress={handleGoToMainApp} />
     </View>
   );
 };
@@ -33,18 +39,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
+    padding: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#333333',
+    marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
     color: '#666666',
-    marginTop: 10,
+    marginBottom: 20,
   },
 });
 

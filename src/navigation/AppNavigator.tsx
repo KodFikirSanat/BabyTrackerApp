@@ -14,6 +14,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 // Import screen components
 import SplashScreen from '../screens/SplashScreen';
 import HomeScreen from '../screens/HomeScreen';
+import MainTabNavigator from './MainTabNavigator'; // Import the new tab navigator
 
 // Import the RootStackParamList type for type safety
 import {RootStackParamList} from '../types/navigation';
@@ -46,7 +47,12 @@ const AppNavigator = () => {
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{title: 'Bebeğim'}} // Title for the Home screen
+          options={{title: 'Ana Sayfa'}} // Title for the Home screen
+        />
+        <Stack.Screen
+          name="Main"
+          component={MainTabNavigator}
+          options={{title: 'Bebeğim'}} // This title will be shown in the header for all tabs
         />
       </Stack.Navigator>
     </NavigationContainer>
