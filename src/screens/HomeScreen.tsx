@@ -1,34 +1,23 @@
 // src/screens/HomeScreen.tsx
 
 /**
- * @file The main home screen of the application.
- * This is the first screen the user sees after the splash screen.
+ * @file The main Home screen, part of the bottom tab navigator.
+ * This screen displays a welcome message and quick access buttons.
  *
  * @format
  */
 
 import React from 'react';
-import {View, Text, StyleSheet, Button} from 'react-native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {RootStackParamList} from '../types/navigation';
+import {View, Text, StyleSheet} from 'react-native';
 
-// Type definition for the Home screen props.
-type HomeScreenProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
-
-const HomeScreen = ({navigation}: HomeScreenProps) => {
+const HomeScreen = () => {
   // 🚀 Log when the component mounts.
   console.log('🚀 HomeScreen: Component mounted');
 
-  const handleGoToMainApp = () => {
-    console.log('🚀 HomeScreen: Navigating to Main tab navigator...');
-    navigation.navigate('Main');
-  };
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome to Bebeğim!</Text>
-      <Text style={styles.subtitle}>This is the Home Screen.</Text>
-      <Button title="Go to Main App" onPress={handleGoToMainApp} />
+      <Text style={styles.title}>Ana Sayfa</Text>
+      <Text style={styles.subtitle}>Hoş geldin! İşte son aktivitelerin.</Text>
     </View>
   );
 };
@@ -38,21 +27,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
     padding: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: '#666666',
-    marginBottom: 20,
+    fontSize: 18,
+    color: 'gray',
   },
 });
 

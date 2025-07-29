@@ -2,26 +2,21 @@
 
 /**
  * @file This component defines the main bottom tab navigation of the application.
- * It includes tabs for Tracking, AI, and Guides.
+ * It includes tabs for Home, Tracking, AI, Guides, and Profile.
  *
  * @format
  */
 
 import React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {MainTabParamList} from '../types/navigation';
 
 // Import the screens for the tabs
+import HomeScreen from '../screens/HomeScreen';
 import TrackingScreen from '../screens/TrackingScreen';
 import AIScreen from '../screens/AIScreen';
 import GuidesScreen from '../screens/GuidesScreen';
-
-// This type will be used to ensure type safety for the tab navigator's screens.
-// We will add this to our main navigation types file in the next step.
-export type MainTabParamList = {
-  Tracking: undefined;
-  AI: undefined;
-  Guides: undefined;
-};
+import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -31,37 +26,46 @@ const MainTabNavigator = () => {
 
   return (
     <Tab.Navigator
+      initialRouteName="HomeTab" // Set the initial tab to be the Home tab
       screenOptions={{
-        // Use the header from the parent Stack navigator
-        headerShown: false,
-        // Active tab color - using the blue from your doc
-        tabBarActiveTintColor: '#6b9ac4',
-        // Inactive tab color
-        tabBarInactiveTintColor: 'gray',
-        tabBarStyle: {
-          backgroundColor: '#ffffff', // White background for the tab bar
-        },
+        headerShown: false, // The header is handled by the parent StackNavigator
+        tabBarActiveTintColor: '#6b9ac4', // Active icon/label color
+        tabBarInactiveTintColor: 'gray', // Inactive icon/label color
       }}>
       <Tab.Screen
-        name="Tracking"
-        component={TrackingScreen}
+        name="HomeTab"
+        component={HomeScreen}
         options={{
-          tabBarLabel: 'Takip',
-          // Icons will be added in a future step
+          tabBarLabel: 'Ana Sayfa',
+          // We will add icons later
         }}
       />
       <Tab.Screen
-        name="AI"
+        name="TrackingTab"
+        component={TrackingScreen}
+        options={{
+          tabBarLabel: 'Takip',
+        }}
+      />
+      <Tab.Screen
+        name="AITab"
         component={AIScreen}
         options={{
           tabBarLabel: 'Yapay Zeka',
         }}
       />
       <Tab.Screen
-        name="Guides"
+        name="GuidesTab"
         component={GuidesScreen}
         options={{
           tabBarLabel: 'Rehberler',
+        }}
+      />
+      <Tab.Screen
+        name="ProfileTab"
+        component={ProfileScreen}
+        options={{
+          tabBarLabel: 'Profil',
         }}
       />
     </Tab.Navigator>

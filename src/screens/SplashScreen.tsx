@@ -25,8 +25,8 @@ const SplashScreen = ({navigation}: SplashScreenProps) => {
     console.log('⏳ SplashScreen: Setting timeout for navigation to Home screen.');
     const timer = setTimeout(() => {
       // 🚀 Log the navigation action.
-      console.log('🚀 SplashScreen: Navigating to Home screen...');
-      navigation.replace('Home'); // Use replace to prevent going back to the splash screen.
+      console.log('🚀 SplashScreen: Navigating to Entry screen...');
+      navigation.replace('Entry'); // Use replace to prevent going back to the splash screen.
     }, 3000); // 3-second delay.
 
     // Cleanup function to clear the timer if the component unmounts.

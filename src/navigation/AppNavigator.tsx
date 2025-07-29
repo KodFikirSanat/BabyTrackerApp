@@ -13,8 +13,8 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
 // Import screen components
 import SplashScreen from '../screens/SplashScreen';
-import HomeScreen from '../screens/HomeScreen';
-import MainTabNavigator from './MainTabNavigator'; // Import the new tab navigator
+import EntryScreen from '../screens/EntryScreen'; // Updated from HomeScreen
+import MainTabNavigator from './MainTabNavigator';
 
 // Import the RootStackParamList type for type safety
 import {RootStackParamList} from '../types/navigation';
@@ -42,17 +42,17 @@ const AppNavigator = () => {
         <Stack.Screen
           name="Splash"
           component={SplashScreen}
-          options={{headerShown: false}} // Hide header for the splash screen
+          options={{headerShown: false}}
         />
         <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{title: 'Ana Sayfa'}} // Title for the Home screen
+          name="Entry" // Updated from "Home"
+          component={EntryScreen} // Updated from HomeScreen
+          options={{title: 'Giriş'}}
         />
         <Stack.Screen
-          name="Main"
+          name="MainTabs" // Updated from "Main"
           component={MainTabNavigator}
-          options={{title: 'Bebeğim'}} // This title will be shown in the header for all tabs
+          options={{title: 'Bebeğim'}} // This header title applies to the whole tab navigator
         />
       </Stack.Navigator>
     </NavigationContainer>
