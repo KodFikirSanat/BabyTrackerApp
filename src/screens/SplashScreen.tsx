@@ -1,8 +1,8 @@
 // src/screens/SplashScreen.tsx
 
 /**
- * @file The splash screen of the application.
- * This screen is shown for a brief period when the app starts.
+ * @file This file defines the SplashScreen component, which is the first visual
+ * element shown to the user upon opening the application.
  *
  * @format
  */
@@ -12,33 +12,47 @@ import {View, Text, StyleSheet} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types/navigation';
 
-// Type definition for the Splash screen props, using the RootStackParamList.
+/**
+ * Type definition for the Splash screen's navigation props.
+ * This ensures type safety when using the navigation object.
+ */
 type SplashScreenProps = NativeStackScreenProps<RootStackParamList, 'Splash'>;
 
-const SplashScreen = ({navigation}: SplashScreenProps) => {
-  // 🚀 Log when the component mounts.
-  console.log('🚀 SplashScreen: Component mounted');
+/**
+ * A temporary screen displayed while the app initializes.
+ * Its primary purpose is to provide a smooth transition into the app
+ * while any necessary assets or data are loaded in the background.
+ *
+ * @param {SplashScreenProps} props - The component's props, primarily for navigation.
+ * @returns {React.JSX.Element} The rendered splash screen component.
+ */
+const SplashScreen = ({navigation}: SplashScreenProps): React.JSX.Element => {
+  console.log('⏳🎨 SplashScreen: Rendering...');
 
-  // This effect runs once after the component mounts.
+  /**
+   * This effect handles the automatic navigation away from the splash screen.
+   * It runs only once after the component has mounted.
+   */
   useEffect(() => {
-    // ⏳ Log that the navigation timer is being set.
-    console.log('⏳ SplashScreen: Setting timeout for navigation to Home screen.');
-    const timer = setTimeout(() => {
-      // 🚀 Log the navigation action.
-      console.log('🚀 SplashScreen: Navigating to Entry screen...');
-      navigation.replace('Entry'); // Use replace to prevent going back to the splash screen.
-    }, 3000); // 3-second delay.
+    console.log('⏳✅ SplashScreen: Component mounted, setting up navigation timer.');
+    const navigationTimer = setTimeout(() => {
+      console.log('⏳➡️ SplashScreen: Timer finished, navigating to Entry screen.');
+      // `replace` is used here to prevent the user from navigating back to the splash screen.
+      // This is a common pattern for one-off screens like this.
+      navigation.replace('Entry');
+    }, 3000); // A 3-second delay provides a brief, non-jarring user experience.
 
-    // Cleanup function to clear the timer if the component unmounts.
+    // The cleanup function is essential to prevent memory leaks or unexpected navigation
+    // if the user closes the app or the component unmounts before the timer fires.
     return () => {
-      console.log('🧹 SplashScreen: Clearing navigation timeout.');
-      clearTimeout(timer);
+      console.log('⏳🧹 SplashScreen: Clearing navigation timer on unmount.');
+      clearTimeout(navigationTimer);
     };
   }, [navigation]);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bebeğim</Text>
+      <Text style={styles.title}>❤️ Bebeğim 😍</Text>
       <Text style={styles.subtitle}>Baby Tracker App</Text>
     </View>
   );

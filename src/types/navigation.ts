@@ -1,33 +1,38 @@
 // src/types/navigation.ts
 
 /**
- * @file This file defines the type mappings for the React Navigation stack and tabs.
- * This ensures type safety for screen names and their parameters.
+ * @file Defines the TypeScript types for the application's navigation structure.
+ * This ensures type safety for route names and parameters across all navigators.
  *
  * @format
  */
 
+import type {NavigatorScreenParams} from '@react-navigation/native';
+
 /**
- * Defines the parameters for the main stack navigator.
- * This is the top-level navigator that handles screens before and after login,
- * including the main tab navigator.
+ * Defines the screen parameters for the main bottom tab navigator.
+ * This navigator contains all the primary screens accessible from the tab bar.
+ * A value of `undefined` indicates that the route takes no parameters.
  */
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-export type RootStackParamList = {
-  Splash: undefined; // The Splash screen, requires no parameters.
-  Entry: undefined; // The Entry screen (previously Home), requires no parameters.
-  MainTabs: undefined; // This route holds the entire Bottom Tab Navigator.
+export type MainTabParamList = {
+  Home: undefined;
+  Tracking: undefined;
+  AI: undefined;
+  Guides: undefined;
+  Profile: undefined;
 };
 
 /**
- * Defines the parameters for the bottom tab navigator's screens.
- * Each key represents a tab screen name.
+ * Defines the screen parameters for the root stack navigator.
+ * This is the highest-level navigator.
  */
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-export type MainTabParamList = {
-  HomeTab: undefined;
-  TrackingTab: undefined;
-  AITab: undefined;
-  GuidesTab: undefined;
-  ProfileTab: undefined;
+export type RootStackParamList = {
+  Splash: undefined;
+  Entry: undefined;
+  /**
+   * This route represents the entire nested bottom tab navigator.
+   * `NavigatorScreenParams` allows the root stack to receive and pass down
+   * navigation parameters to the screens within `MainTabParamList`.
+   */
+  MainTabs: NavigatorScreenParams<MainTabParamList>;
 };
