@@ -17,7 +17,7 @@ import type {NavigatorScreenParams} from '@react-navigation/native';
 export type MainTabParamList = {
   Home: undefined;
   Tracking: undefined;
-  AddBaby: undefined; // New screen
+  // AddBaby is removed from here to make it a root-level screen
   AI: undefined;
   Guides: undefined;
   Profile: undefined;
@@ -30,6 +30,7 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   Splash: undefined;
   Entry: undefined;
+  AddBaby: undefined; // Screen for adding the first baby, now at the root level
   /**
    * This route represents the entire nested bottom tab navigator.
    * `NavigatorScreenParams` allows the root stack to receive and pass down
