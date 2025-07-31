@@ -1,66 +1,124 @@
-// src/screens/GuidesScreen.tsx
+import React, { useState, useEffect } from 'react';
+import {
+  SafeAreaView,
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
+import firestore from '@react-native-firebase/firestore';
 
-/**
- * @file Defines the GuidesScreen, which displays a list of informational
- * articles and guides for parents.
- *
- * @format
- */
+// Her bir rehber kartını temsil eden component
+// Bu component'i ayrı bir dosyada oluşturmak en iyi pratiktir.
+const GuideCard = ({ item, onPress }) => (
+  <TouchableOpacity style={styles.card} onPress={onPress}>
+    <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
+    <View style={styles.cardContent}>
+      <Text style={styles.cardTitle}>{item.title}</Text>
+      <Text style={styles.cardExcerpt}>{item.excerpt}</Text>
+    </View>
+  </TouchableOpacity>
+);
 
-import React, {useEffect} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-import type {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
-import {MainTabParamList} from '../types/navigation';
-
-/**
- * Type definition for the Guides screen's navigation props.
- */
-type GuidesScreenProps = BottomTabScreenProps<MainTabParamList, 'Guides'>;
-
-/**
- * A screen that presents a list of expert-written guides on child development.
- * This component is part of the main tab navigation.
- *
- * @param {GuidesScreenProps} props - The component's props, used for navigation event listening.
- * @returns {React.JSX.Element} The rendered guides screen.
- */
-const GuidesScreen = ({navigation}: GuidesScreenProps): React.JSX.Element => {
-  console.log('📚🎨 GuidesScreen: Rendering...');
+const GuidesScreen = ({ navigation }) => {
+  // Yükleme durumunu yönetmek için state
+  const [loading, setLoading] = useState(true);
+  
+  // Firestore'dan gelen rehberleri saklamak için state
+  const [guides, setGuides] = useState([]);
 
   useEffect(() => {
-    console.log('📚✅ GuidesScreen: Component did mount.');
+    // Firestore'daki 'guides' koleksiyonuna sorgu atıyoruz
+    const subscriber = firestore()
+      .collection('guides')
+      .onSnapshot(querySnapshot => {
+        const guidesList = [];
 
-    const unsubscribeFocus = navigation.addListener('focus', () => {
-      console.log('📚👁️ GuidesScreen: Screen is focused.');
-    });
+        querySnapshot.forEach(documentSnapshot => {
+          // Her bir dokümanı listeye ekliyoruz.
+          // Dokümanın ID'sini de veriye eklemek önemlidir,
+          // çünkü FlatList'te 'key' olarak ve navigasyon için kullanacağız.
+          guidesList.push({
+            ...documentSnapshot.data(),
+            id: documentSnapshot.id,
+          });
+        });
 
-    const unsubscribeBlur = navigation.addListener('blur', () => {
-      console.log('📚💨 GuidesScreen: Screen is blurred.');
-    });
+        setGuides(guidesList);
+        setLoading(false);
+      });
 
-    return () => {
-      unsubscribeFocus();
-      unsubscribeBlur();
-      console.log('📚🧹 GuidesScreen: Listeners cleared on unmount.');
-    };
-  }, [navigation]);
+    // Component ekrandan kaldırıldığında Firestore dinleyicisini kapat
+    return () => subscriber();
+  }, []);
+
+  // Veriler yüklenirken bir yükleme göstergesi göster
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
+
+  // Kart tıklandığında detay sayfasına yönlendirme fonksiyonu
+  const handleCardPress = (item) => {
+    // navigation.navigate('GuideDetail', { guide: item });
+    console.log(item.title, "tıklandı.");
+    // Henüz GuideDetail sayfanız olmadığı için bu satırı yorumda bıraktım.
+    // Navigasyon kütüphanenize göre (örn: React Navigation) bu kısmı düzenlemelisiniz.
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Rehberler Sayfası</Text>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <FlatList
+        data={guides}
+        renderItem={({ item }) => (
+          <GuideCard 
+            item={item} 
+            onPress={() => handleCardPress(item)} 
+          />
+        )}
+        keyExtractor={item => item.id}
+        numColumns={2} // Dökümanda belirtildiği gibi iki sütunlu yapı
+      />
+    </SafeAreaView>
   );
 };
 
+// Sayfanın ve kartların stilleri
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
   },
-  title: {
-    fontSize: 24,
+  card: {
+    flex: 1,
+    margin: 8,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  cardImage: {
+    width: '100%',
+    height: 100,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
+  cardContent: {
+    padding: 12,
+  },
+  cardTitle: {
+    fontSize: 16,
     fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  cardExcerpt: {
+    fontSize: 12,
+    color: '#666',
   },
 });
 
