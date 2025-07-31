@@ -62,10 +62,7 @@ const GuidesScreen = ({ navigation }) => {
 
   // Kart tıklandığında detay sayfasına yönlendirme fonksiyonu
   const handleCardPress = (item) => {
-    // navigation.navigate('GuideDetail', { guide: item });
-    console.log(item.title, "tıklandı.");
-    // Henüz GuideDetail sayfanız olmadığı için bu satırı yorumda bıraktım.
-    // Navigasyon kütüphanenize göre (örn: React Navigation) bu kısmı düzenlemelisiniz.
+    navigation.navigate('GuideDetail', { guide: item });
   };
 
   return (

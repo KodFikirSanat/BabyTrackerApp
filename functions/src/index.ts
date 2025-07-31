@@ -1,34 +1,122 @@
+
+import {onSchedule} from "firebase-functions/v2/scheduler";
+import {setGlobalOptions} from "firebase-functions/v2";
+import * as admin from "firebase-admin";
+import * as logger from "firebase-functions/logger";
+
+admin.initializeApp();
+setGlobalOptions({region: "europe-west1"});
+
+const db = admin.firestore();
+
 /**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
+*Scheduled function that runs every day at 9:00AM to send vaccination reminders
  */
+export const sendVaccinationReminders = onSchedule(
+  {
+    schedule: "every day 09:00",
+    timeZone: "Europe/Istanbul",
+  },
+  async () => {
+    logger.info("Running vaccination reminder check...");
 
-import {setGlobalOptions} from "firebase-functions";
+    const now = new Date();
+    const startOfTomorrow = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1,
+      0,
+      0,
+      0,
+    );
+    const endOfTomorrow = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1,
+      23,
+      59,
+      59,
+    );
 
-// Uncomment these imports when you need
-// import {onRequest} from "firebase-functions/https";
-// import * as logger from "firebase-functions/logger";
+    const startOfTomorrowTimestamp =
+      admin.firestore.Timestamp.fromDate(startOfTomorrow);
+    const endOfTomorrowTimestamp =
+      admin.firestore.Timestamp.fromDate(endOfTomorrow);
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+    try {
+      // 1. Find health logs for vaccinations scheduled for tomorrow
+      const healthLogsSnapshot = await db
+        .collectionGroup("healthLogs")
+        .where("type", "==", "vaccination")
+        .where("eventDate", ">=", startOfTomorrowTimestamp)
+        .where("eventDate", "<=", endOfTomorrowTimestamp)
+        .get();
 
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
-setGlobalOptions({maxInstances: 10});
+      if (healthLogsSnapshot.empty) {
+        logger.info("No upcoming vaccinations found for tomorrow.");
+        return;
+      }
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+      logger.info(
+        `Found ${healthLogsSnapshot.docs.length} upcoming vaccinations.`,
+      );
+
+      // 2. Process each vaccination log
+      for (const doc of healthLogsSnapshot.docs) {
+        const logData = doc.data();
+        const babyDocRef = doc.ref.parent.parent;
+
+        if (!babyDocRef) {
+          logger.warn("Could not find parent baby document for log:", doc.id);
+          continue;
+        }
+
+        const babySnapshot = await babyDocRef.get();
+        if (!babySnapshot.exists) {
+          logger.warn("Baby document not found for log:", doc.id);
+          continue;
+        }
+
+        const babyData = babySnapshot.data();
+        if (!babyData || !babyData.userId) {
+          logger.warn("Missing userId on baby document:", babyDocRef.id);
+          continue;
+        }
+        const userId = babyData.userId;
+
+        // 3. Get the user's FCM token
+        const userDoc = await db.collection("users").doc(userId).get();
+        if (!userDoc.exists) {
+          logger.warn("User document not found:", userId);
+          continue;
+        }
+
+        const userData = userDoc.data();
+        if (!userData || !userData.fcmToken) {
+          logger.warn(`User ${userId} does not have an FCM token.`);
+          continue;
+        }
+        const fcmToken = userData.fcmToken;
+
+        // 4. Prepare and send the notification
+        const payload = {
+          notification: {
+            title: "Aşı Hatırlatıcısı",
+            body:
+              `Yarın ${babyData.name} bebeğinizin ` +
+              `${logData.eventName} aşısı var!`,
+          },
+          token: fcmToken,
+        };
+
+        logger.info(
+          `Sending notification to user ${userId} for baby ${babyData.name}`,
+        );
+
+        await admin.messaging().send(payload);
+      }
+    } catch (error) {
+      logger.error("Error sending vaccination reminders:", error);
+    }
+  },
+);

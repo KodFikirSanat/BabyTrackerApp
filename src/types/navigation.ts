@@ -31,6 +31,7 @@ export type RootStackParamList = {
   Splash: undefined;
   Entry: undefined;
   AddBaby: undefined; // Screen for adding the first baby, now at the root level
+  GuideDetail: {guide: {title: string; content: string; imageUrl?: string}};
   /**
    * This route represents the entire nested bottom tab navigator.
    * `NavigatorScreenParams` allows the root stack to receive and pass down
