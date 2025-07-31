@@ -47,11 +47,8 @@ const MainTabNavigator = (): React.JSX.Element => {
         component={TrackingScreen}
         options={{tabBarLabel: 'Takip'}}
       />
-      <Tab.Screen
-        name="AI"
-        component={AIScreen}
-        options={{tabBarLabel: 'Yapay Uzman'}}
-      />
+      
+      
       <Tab.Screen
         name="Guides"
         component={GuidesScreen}
