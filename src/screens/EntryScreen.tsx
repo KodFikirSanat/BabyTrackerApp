@@ -15,6 +15,7 @@ import {
   Button,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types/navigation';
@@ -32,10 +33,11 @@ type EntryScreenProps = NativeStackScreenProps<RootStackParamList, 'Entry'>;
  * @param {EntryScreenProps} props - The component's props, used for navigation.
  * @returns {React.JSX.Element} The rendered entry screen component.
  */
-const EntryScreen = ({navigation}: EntryScreenProps): React.JSX.Element => {
+const EntryScreen = ({}: EntryScreenProps): React.JSX.Element => {
   console.log('🚪🎨 EntryScreen: Rendering...');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
 
   /**
    * Handles user sign-up using email and password.
@@ -45,10 +47,11 @@ const EntryScreen = ({navigation}: EntryScreenProps): React.JSX.Element => {
       Alert.alert('Hata', 'Lütfen e-posta ve şifre girin.');
       return;
     }
+    setLoading(true);
     try {
       await auth().createUserWithEmailAndPassword(email, password);
       console.log('🚪✅ EntryScreen: User account created & signed in!');
-      navigation.replace('MainTabs', {screen: 'Home'});
+      // Navigation is now handled by the global onAuthStateChanged listener
     } catch (error: any) {
       console.error('🚪❌ EntryScreen: SignUp Error', error);
       if (error.code === 'auth/email-already-in-use') {
@@ -60,6 +63,8 @@ const EntryScreen = ({navigation}: EntryScreenProps): React.JSX.Element => {
       } else {
         Alert.alert('Bir Hata Oluştu', error.message);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,10 +76,11 @@ const EntryScreen = ({navigation}: EntryScreenProps): React.JSX.Element => {
       Alert.alert('Hata', 'Lütfen e-posta ve şifre girin.');
       return;
     }
+    setLoading(true);
     try {
       await auth().signInWithEmailAndPassword(email, password);
       console.log('🚪➡️ EntryScreen: User signed in!');
-      navigation.replace('MainTabs', {screen: 'Home'});
+      // Navigation is now handled by the global onAuthStateChanged listener
     } catch (error: any) {
       console.error('🚪❌ EntryScreen: Login Error', error);
       if (
@@ -87,6 +93,8 @@ const EntryScreen = ({navigation}: EntryScreenProps): React.JSX.Element => {
       } else {
         Alert.alert('Bir Hata Oluştu', error.message);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -100,6 +108,7 @@ const EntryScreen = ({navigation}: EntryScreenProps): React.JSX.Element => {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        editable={!loading}
       />
       <TextInput
         style={styles.input}
@@ -107,11 +116,16 @@ const EntryScreen = ({navigation}: EntryScreenProps): React.JSX.Element => {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        editable={!loading}
       />
-      <View style={styles.buttonContainer}>
-        <Button title="Kayıt Ol" onPress={handleSignUp} />
-        <Button title="Giriş Yap" onPress={handleLogin} />
-      </View>
+      {loading ? (
+        <ActivityIndicator size="large" color="#e5d4f1" style={{marginTop: 20}} />
+      ) : (
+        <View style={styles.buttonContainer}>
+          <Button title="Kayıt Ol" onPress={handleSignUp} />
+          <Button title="Giriş Yap" onPress={handleLogin} />
+        </View>
+      )}
     </View>
   );
 };
