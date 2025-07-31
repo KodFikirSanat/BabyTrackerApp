@@ -17,6 +17,7 @@ import type {NavigatorScreenParams} from '@react-navigation/native';
 export type MainTabParamList = {
   Home: undefined;
   Tracking: undefined;
+  AddBaby: undefined; // New screen
   AI: undefined;
   Guides: undefined;
   Profile: undefined;

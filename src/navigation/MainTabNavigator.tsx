@@ -14,6 +14,7 @@ import {MainTabParamList} from '../types/navigation';
 // Import all screens that will be used as tabs
 import HomeScreen from '../screens/HomeScreen';
 import TrackingScreen from '../screens/TrackingScreen';
+import AddBabyScreen from '../screens/AddBabyScreen'; // Import the new screen
 import AIScreen from '../screens/AIScreen';
 import GuidesScreen from '../screens/GuidesScreen';
 import ProfileScreen from '../screens/ProfileScreen';

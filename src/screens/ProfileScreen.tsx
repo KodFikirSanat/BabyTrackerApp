@@ -7,9 +7,11 @@
  * @format
  */
 
-import React, {useEffect} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import React from 'react';
+import {View, Text, StyleSheet, Button, Alert} from 'react-native';
 import type {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
+import {useAuth} from '../context/AuthContext';
+import auth from '@react-native-firebase/auth';
 import {MainTabParamList} from '../types/navigation';
 
 /**
@@ -25,30 +27,30 @@ type ProfileScreenProps = BottomTabScreenProps<MainTabParamList, 'Profile'>;
  * @param {ProfileScreenProps} props - The component's props, used for navigation event listening.
  * @returns {React.JSX.Element} The rendered profile screen.
  */
-const ProfileScreen = ({navigation}: ProfileScreenProps): React.JSX.Element => {
+const ProfileScreen = ({}: ProfileScreenProps): React.JSX.Element => {
   console.log('👤🎨 ProfileScreen: Rendering...');
+  const {user} = useAuth();
 
-  useEffect(() => {
-    console.log('👤✅ ProfileScreen: Component did mount.');
-
-    const unsubscribeFocus = navigation.addListener('focus', () => {
-      console.log('👤👁️ ProfileScreen: Screen is focused.');
-    });
-
-    const unsubscribeBlur = navigation.addListener('blur', () => {
-      console.log('👤💨 ProfileScreen: Screen is blurred.');
-    });
-
-    return () => {
-      unsubscribeFocus();
-      unsubscribeBlur();
-      console.log('👤🧹 ProfileScreen: Listeners cleared on unmount.');
-    };
-  }, [navigation]);
+  const handleLogout = async () => {
+    console.log('👤🚪 ProfileScreen: Logging out...');
+    try {
+      await auth().signOut();
+      console.log('👤✅ ProfileScreen: User signed out!');
+      // Navigation back to EntryScreen is handled automatically
+      // by the onAuthStateChanged listener in AuthProvider.
+    } catch (error) {
+      console.error('👤❌ ProfileScreen: Logout Error', error);
+      Alert.alert('Hata', 'Çıkış yapılırken bir sorun oluştu.');
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profilim Sayfası</Text>
+      <Text style={styles.title}>Profilim</Text>
+      {user && <Text style={styles.emailText}>Hoş geldin, {user.email}</Text>}
+      <View style={styles.buttonContainer}>
+        <Button title="Çıkış Yap" onPress={handleLogout} color="#ff3b30" />
+      </View>
     </View>
   );
 };
@@ -58,10 +60,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  emailText: {
+    fontSize: 16,
+    color: 'gray',
+    marginBottom: 30,
+  },
+  buttonContainer: {
+    width: '100%',
   },
 });
 
