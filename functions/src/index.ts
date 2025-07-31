@@ -20,16 +20,20 @@ export const sendVaccinationReminders = onSchedule(
     async (event) => {
         logger.info("Running vaccination reminder check...");
 
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowStr = tomorrow.toISOString().split("T")[0]; // YYYY-MM-DD format
+        const now = new Date();
+        const startOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+        const endOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 23, 59, 59);
+
+        const startOfTomorrowTimestamp = admin.firestore.Timestamp.fromDate(startOfTomorrow);
+        const endOfTomorrowTimestamp = admin.firestore.Timestamp.fromDate(endOfTomorrow);
 
         try {
             // 1. Find health logs for vaccinations scheduled for tomorrow
             const healthLogsSnapshot = await db
                 .collectionGroup("healthLogs")
                 .where("type", "==", "vaccination")
-                .where("eventDate", "==", tomorrowStr)
+                .where("eventDate", ">=", startOfTomorrowTimestamp)
+                .where("eventDate", "<=", endOfTomorrowTimestamp)
                 .get();
 
             if (healthLogsSnapshot.empty) {
@@ -80,7 +84,7 @@ export const sendVaccinationReminders = onSchedule(
                 const payload = {
                     notification: {
                         title: "Aşı Hatırlatıcısı",
-                        body: `Yarın ${babyData.name} bebeğinizin ${logData.notes} aşısı var!`,
+                        body: `Yarın ${babyData.name} bebeğinizin ${logData.eventName} aşısı var!`,
                     },
                     token: fcmToken,
                 };

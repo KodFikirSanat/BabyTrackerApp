@@ -16,7 +16,7 @@ import HomeScreen from '../screens/HomeScreen';
 import TrackingScreen from '../screens/TrackingScreen';
 // AddBabyScreen is no longer a tab
 import AIScreen from '../screens/AIScreen';
-import GuidesScreen from '../screens/GuidesScreen';
+import GuidesStackNavigator from './GuidesStackNavigator';
 import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -58,7 +58,7 @@ const MainTabNavigator = (): React.JSX.Element => {
       />
       <Tab.Screen
         name="Guides"
-        component={GuidesScreen}
+        component={GuidesStackNavigator}
         options={{tabBarLabel: 'Rehberler'}}
       />
       <Tab.Screen

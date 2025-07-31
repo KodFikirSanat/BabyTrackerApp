@@ -11,6 +11,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Button, Alert} from 'react-native';
 import type {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
 import {useAuth} from '../context/AuthContext';
+import {useBaby} from '../context/BabyContext';
 import auth from '@react-native-firebase/auth';
 import {MainTabParamList} from '../types/navigation';
 
@@ -30,6 +31,7 @@ type ProfileScreenProps = BottomTabScreenProps<MainTabParamList, 'Profile'>;
 const ProfileScreen = ({}: ProfileScreenProps): React.JSX.Element => {
   console.log('👤🎨 ProfileScreen: Rendering...');
   const {user} = useAuth();
+  const {selectedBaby} = useBaby();
 
   const handleLogout = async () => {
     console.log('👤🚪 ProfileScreen: Logging out...');
@@ -48,6 +50,15 @@ const ProfileScreen = ({}: ProfileScreenProps): React.JSX.Element => {
     <View style={styles.container}>
       <Text style={styles.title}>Profilim</Text>
       {user && <Text style={styles.emailText}>Hoş geldin, {user.email}</Text>}
+
+      {selectedBaby && (
+        <View style={styles.babyInfoContainer}>
+          <Text style={styles.babyName}>{selectedBaby.name}</Text>
+          <Text>Doğum Tarihi: {selectedBaby.dateOfBirth.toDate().toLocaleDateString()}</Text>
+          <Text>Cinsiyet: {selectedBaby.gender === 'female' ? 'Kız' : 'Erkek'}</Text>
+        </View>
+      )}
+
       <View style={styles.buttonContainer}>
         <Button title="Çıkış Yap" onPress={handleLogout} color="#ff3b30" />
       </View>
@@ -56,12 +67,12 @@ const ProfileScreen = ({}: ProfileScreenProps): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        paddingTop: 50, // Pushed content down from the top
+        paddingHorizontal: 20,
+      },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -72,8 +83,23 @@ const styles = StyleSheet.create({
     color: 'gray',
     marginBottom: 30,
   },
+  babyInfoContainer: {
+    marginBottom: 30,
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    width: '100%',
+  },
+  babyName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
   buttonContainer: {
     width: '100%',
+    marginTop: 'auto', // Pushes the button to the bottom
+    marginBottom: 40,
   },
 });
 
