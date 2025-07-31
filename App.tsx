@@ -16,6 +16,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
 import {AuthProvider, useAuth} from './src/context/AuthContext';
+import {BabyProvider} from './src/context/BabyContext';
 import SplashScreen from './src/screens/SplashScreen';
 import EntryScreen from './src/screens/EntryScreen';
 import MainTabNavigator from './src/navigation/MainTabNavigator';
@@ -63,11 +64,13 @@ function App(): React.JSX.Element {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{headerShown: false}}>
-            <RootNavigator />
-          </Stack.Navigator>
-        </NavigationContainer>
+        <BabyProvider>
+          <NavigationContainer>
+            <Stack.Navigator screenOptions={{headerShown: false}}>
+              <RootNavigator />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </BabyProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );
