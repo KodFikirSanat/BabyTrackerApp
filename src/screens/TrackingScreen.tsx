@@ -24,7 +24,7 @@ import {
 import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 import {useBaby} from '../context/BabyContext';
 import {useIsFocused} from '@react-navigation/native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 // Type definitions with corrected Timestamp type
 type DevelopmentLog = { id: string; category: 'development'; type: 'weight' | 'height'; value: number; createdAt: FirebaseFirestoreTypes.Timestamp; };
@@ -117,7 +117,7 @@ const AddLogModal = ({ visible, onClose, babyId }: { visible: boolean; onClose: 
             </View>
             <TextInput style={styles.input} placeholder="Olay Adı (örn: 1. Ay Aşısı)" value={logEventName} onChangeText={setLogEventName} />
             <TouchableOpacity onPress={() => setShowDatePicker(true)}><Text style={styles.input}>Tarih: {logDate.toLocaleDateString()}</Text></TouchableOpacity>
-             {showDatePicker && <DateTimePicker value={logDate} mode="date" display="default" onChange={(e,d) => {setShowDatePicker(Platform.OS === 'ios'); setLogDate(d||logDate);}} />}
+             {showDatePicker && <DateTimePicker value={logDate} mode="date" display="default" onChange={(event: DateTimePickerEvent, date?: Date) => {setShowDatePicker(Platform.OS === 'ios'); setLogDate(date||logDate);}} />}
           </>
         )}
         
@@ -180,17 +180,28 @@ const TrackingScreen = () => {
 
   const filteredLogs = useMemo(() => logs.filter(log => log.category === activeCategory), [logs, activeCategory]);
 
-  const renderLogItem = ({item}: {item: AnyLog}) => (
-    <View style={styles.logItem}>
-      <Text style={styles.logType}>{item.type === 'doctor_visit' ? 'Doktor Ziyareti' : item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Text>
-      <Text style={styles.logValue}>
-        {item.category === 'development' && `${item.value} ${item.type === 'weight' ? 'kg' : 'cm'}`}
-        {item.category === 'routine' && `Süre: ${item.durationInMinutes} dk`}
-        {item.category === 'health' && item.eventName}
-      </Text>
-      <Text style={styles.logDate}>{item.createdAt.toDate().toLocaleDateString()}</Text>
-    </View>
-  );
+  const renderLogItem = ({item}: {item: AnyLog}) => {
+    const renderContent = () => {
+      switch (item.category) {
+        case 'development':
+          return <Text style={styles.logValue}>{`${item.value} ${item.type === 'weight' ? 'kg' : 'cm'}`}</Text>;
+        case 'routine':
+          return <Text style={styles.logValue}>{`Süre: ${item.durationInMinutes} dk`}</Text>;
+        case 'health':
+          return <Text style={styles.logValue}>{item.eventName}</Text>;
+        default:
+          return null;
+      }
+    };
+
+    return (
+      <View style={styles.logItem}>
+        <Text style={styles.logType}>{item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Text>
+        {renderContent()}
+        <Text style={styles.logDate}>{item.createdAt?.toDate().toLocaleDateString()}</Text>
+      </View>
+    );
+  };
 
   const CategoryTabs = () => (
     <View style={styles.tabContainer}>

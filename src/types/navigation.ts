@@ -11,29 +11,25 @@ import type {NavigatorScreenParams} from '@react-navigation/native';
 
 /**
  * Defines the screen parameters for the main bottom tab navigator.
- * This navigator contains all the primary screens accessible from the tab bar.
+ * This navigator contains the core screens accessible from the tab bar.
  * A value of `undefined` indicates that the route takes no parameters.
  */
 export type MainTabParamList = {
-  Home: undefined;
+  Home: undefined; // Keeping Home for now, will adjust if needed
   Tracking: undefined;
-  AddBaby: undefined; // New screen
   AI: undefined;
   Guides: undefined;
-  Profile: undefined;
 };
 
 /**
  * Defines the screen parameters for the root stack navigator.
- * This is the highest-level navigator.
+ * This is the highest-level navigator which can show modal-like screens
+ * over the main tabs.
  */
 export type RootStackParamList = {
   Splash: undefined;
   Entry: undefined;
-  /**
-   * This route represents the entire nested bottom tab navigator.
-   * `NavigatorScreenParams` allows the root stack to receive and pass down
-   * navigation parameters to the screens within `MainTabParamList`.
-   */
   MainTabs: NavigatorScreenParams<MainTabParamList>;
+  AddBaby: undefined;
+  Profile: undefined; // Profile is now a root stack screen
 };
