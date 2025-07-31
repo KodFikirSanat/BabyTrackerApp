@@ -65,8 +65,8 @@ const AddBabyScreen = ({navigation}: AddBabyScreenProps) => {
       console.log('👶✅ AddBabyScreen: Baby profile saved successfully!');
       Alert.alert('Başarılı', 'Bebek profili başarıyla kaydedildi.');
       
-      // Navigate to the home screen after successful save
-      navigation.navigate('Home');
+      // Navigation is now handled automatically by the RootNavigator
+      // when the baby list is updated in BabyContext.
 
     } catch (error) {
       console.error('👶❌ AddBabyScreen: Error saving baby profile:', error);

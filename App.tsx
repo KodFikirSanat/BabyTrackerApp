@@ -2,10 +2,8 @@
 
 /**
  * @file The absolute entry point of the Bebeğim application.
- * Its primary responsibility is to set up the top-level providers,
- * such as the NavigationContainer, AuthProvider, and SafeAreaProvider.
- *
- * It also manages the navigation flow based on the user's authentication state.
+ * It sets up top-level providers and manages the navigation flow based
+ * on authentication and user data (e.g., whether a baby profile exists).
  *
  * @format
  */
@@ -16,70 +14,52 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {AuthProvider, useAuth} from './src/context/AuthContext';
-import {BabyProvider} from './src/context/BabyContext';
+import {BabyProvider, useBaby} from './src/context/BabyContext';
 
 import SplashScreen from './src/screens/SplashScreen';
 import EntryScreen from './src/screens/EntryScreen';
 import AddBabyScreen from './src/screens/AddBabyScreen';
-import ProfileScreen from './src/screens/ProfileScreen'; // ProfileScreen'i import et
 import MainTabNavigator from './src/navigation/MainTabNavigator';
 import {RootStackParamList} from './src/types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 /**
- * @name AppNavigator
- * @description Manages the navigation flow based on the user's authentication state.
- *              It decides which screens are accessible.
+ * The core navigation logic. It decides which screen to show based on
+ * the authentication and baby data loading status.
  */
-const AppNavigator = () => {
-  const {user, loading} = useAuth();
-  
-  console.log('🗺️⏳ AppNavigator: Checking auth state...', { loading, user: !!user });
+const RootNavigator = () => {
+  const {user, loading: authLoading} = useAuth();
+  const {babies, loading: babiesLoading} = useBaby();
 
-  if (loading) {
-    // While checking auth, show a splash screen. Using a dedicated screen component
-    // is better than returning the component directly to provide navigation context.
-    return (
-      <Stack.Navigator screenOptions={{headerShown: false}}>
-        <Stack.Screen name="Splash" component={SplashScreen} />
-      </Stack.Navigator>
-    );
+  console.log(
+    `📱🎨 RootNavigator: AuthLoading: ${authLoading}, BabiesLoading: ${babiesLoading}, User: ${user?.email}, Babies: ${babies.length}`
+  );
+
+  // While either context is loading, show the splash screen.
+  if (authLoading || babiesLoading) {
+    return <Stack.Screen name="Splash" component={SplashScreen} />;
   }
 
-  return (
-    <Stack.Navigator>
-      {user ? (
-        // User is authenticated, show main app screens.
-        // Using Stack.Group prevents TypeScript errors with conditional rendering.
-        <Stack.Group>
-          <Stack.Screen
-            name="MainTabs"
-            component={MainTabNavigator}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen name="AddBaby" component={AddBabyScreen} options={{ title: 'Bebek Ekle' }}/>
-          <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profil' }} />
-        </Stack.Group>
-      ) : (
-        // User is not authenticated, show the entry screen.
-        <Stack.Screen
-          name="Entry"
-          component={EntryScreen}
-          options={{ headerShown: false }}
-        />
-      )}
-    </Stack.Navigator>
-  );
+  // If there is no user, show the entry/login screen.
+  if (!user) {
+    return <Stack.Screen name="Entry" component={EntryScreen} />;
+  }
+
+  // If the user is logged in but has no babies, force them to the AddBaby screen.
+  // This screen is now part of the root stack, not the tab navigator.
+  if (user && babies.length === 0) {
+    return <Stack.Screen name="AddBaby" component={AddBabyScreen} />;
+  }
+
+  // If the user is logged in and has at least one baby, show the main app.
+  return <Stack.Screen name="MainTabs" component={MainTabNavigator} />;
 };
 
 /**
- * @name App
- * @description The root component of the entire application, wrapping everything in providers.
- * @returns {React.JSX.Element} The root of the application's component tree.
+ * The root component of the application.
  */
 function App(): React.JSX.Element {
-  console.log('📱✅ App: Root component mounted.');
   return (
     <SafeAreaProvider>
       <AuthProvider>
