@@ -48,6 +48,8 @@ const MainTabNavigator = (): React.JSX.Element => {
         component={TrackingScreen}
         options={{tabBarLabel: 'Takip'}}
       />
+      
+      
 
       <Tab.Screen
         name="AI"
