@@ -8,8 +8,10 @@
  * @format
  */
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
+import firestore from '@react-native-firebase/firestore';
+import messaging from '@react-native-firebase/messaging';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
@@ -31,6 +33,35 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const RootNavigator = () => {
   const {user, loading: authLoading} = useAuth();
   const {babies, loading: babiesLoading} = useBaby();
+
+  useEffect(() => {
+    const setupNotifications = async () => {
+      if (user) {
+        try {
+          // 1. Request Permission
+          await messaging().requestPermission();
+
+          // 2. Get Token
+          const fcmToken = await messaging().getToken();
+
+          if (fcmToken) {
+            console.log('📱 FCM Token:', fcmToken);
+            // 3. Save Token to Firestore
+            await firestore().collection('users').doc(user.uid).set(
+              {
+                fcmToken: fcmToken,
+              },
+              {merge: true}, // Use merge to avoid overwriting other user data
+            );
+          }
+        } catch (error) {
+          console.error('Error setting up notifications:', error);
+        }
+      }
+    };
+
+    setupNotifications();
+  }, [user]);
 
   console.log(
     `📱🎨 RootNavigator: AuthLoading: ${authLoading}, BabiesLoading: ${babiesLoading}, User: ${user?.email}, Babies: ${babies.length}`

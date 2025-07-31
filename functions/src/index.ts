@@ -1,34 +1,96 @@
+
+import {onSchedule} from "firebase-functions/v2/scheduler";
+import {setGlobalOptions} from "firebase-functions/v2";
+import * as admin from "firebase-admin";
+import * as logger from "firebase-functions/logger";
+
+admin.initializeApp();
+setGlobalOptions({region: "europe-west1"});
+
+const db = admin.firestore();
+
 /**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ * A scheduled function that runs every day at 9:00 AM to send vaccination reminders.
  */
+export const sendVaccinationReminders = onSchedule(
+    {
+        schedule: "every day 09:00",
+        timeZone: "Europe/Istanbul",
+    },
+    async (event) => {
+        logger.info("Running vaccination reminder check...");
 
-import {setGlobalOptions} from "firebase-functions";
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split("T")[0]; // YYYY-MM-DD format
 
-// Uncomment these imports when you need
-// import {onRequest} from "firebase-functions/https";
-// import * as logger from "firebase-functions/logger";
+        try {
+            // 1. Find health logs for vaccinations scheduled for tomorrow
+            const healthLogsSnapshot = await db
+                .collectionGroup("healthLogs")
+                .where("type", "==", "vaccination")
+                .where("eventDate", "==", tomorrowStr)
+                .get();
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+            if (healthLogsSnapshot.empty) {
+                logger.info("No upcoming vaccinations found for tomorrow.");
+                return;
+            }
 
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
-setGlobalOptions({maxInstances: 10});
+            logger.info(`Found ${healthLogsSnapshot.docs.length} upcoming vaccinations.`);
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+            // 2. Process each vaccination log
+            for (const doc of healthLogsSnapshot.docs) {
+                const logData = doc.data();
+                const babyDocRef = doc.ref.parent.parent;
+
+                if (!babyDocRef) {
+                    logger.warn("Could not find parent baby document for log:", doc.id);
+                    continue;
+                }
+
+                const babySnapshot = await babyDocRef.get();
+                if (!babySnapshot.exists) {
+                    logger.warn("Baby document not found for log:", doc.id);
+                    continue;
+                }
+
+                const babyData = babySnapshot.data();
+                if (!babyData || !babyData.userId) {
+                    logger.warn("Missing userId on baby document:", babyDocRef.id);
+                    continue;
+                }
+                const userId = babyData.userId;
+
+                // 3. Get the user's FCM token
+                const userDoc = await db.collection("users").doc(userId).get();
+                if (!userDoc.exists) {
+                    logger.warn("User document not found:", userId);
+                    continue;
+                }
+
+                const userData = userDoc.data();
+                if (!userData || !userData.fcmToken) {
+                    logger.warn(`User ${userId} does not have an FCM token.`);
+                    continue;
+                }
+                const fcmToken = userData.fcmToken;
+
+                // 4. Prepare and send the notification
+                const payload = {
+                    notification: {
+                        title: "Aşı Hatırlatıcısı",
+                        body: `Yarın ${babyData.name} bebeğinizin ${logData.notes} aşısı var!`,
+                    },
+                    token: fcmToken,
+                };
+
+                logger.info(`Sending notification to user ${userId} for baby ${babyData.name}`);
+
+                await admin.messaging().send(payload);
+            }
+        } catch (error) {
+            logger.error("Error sending vaccination reminders:", error);
+        }
+    }
+);
