@@ -1,0 +1,29 @@
+{
+	"project_info": {
+	  "project_number": "371418722006",
+	  "project_id": "capable-hexagon-466719-j4",
+	  "storage_bucket": "capable-hexagon-466719-j4.firebasestorage.app"
+	},
+	"client": [
+	  {
+		"client_info": {
+		  "mobilesdk_app_id": "1:371418722006:android:54f9cae6183e1481ef2377",
+		  "android_client_info": {
+			"package_name": "com.kodfikirsanat.bebegim"
+		  }
+		},
+		"oauth_client": [],
+		"api_key": [
+		  {
+			"current_key": "AIzaSyBcgTQv_fI0tFkMQkfDqI-5f0goN6YgxZ4"
+		  }
+		],
+		"services": {
+		  "appinvite_service": {
+			"other_platform_oauth_client": []
+		  }
+		}
+	  }
+	],
+	"configuration_version": "1"
+  }

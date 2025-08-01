@@ -14,7 +14,6 @@ import {MainTabParamList} from '../types/navigation';
 // Import all screens that will be used as tabs
 import HomeScreen from '../screens/HomeScreen';
 import TrackingScreen from '../screens/TrackingScreen';
-import AIScreen from '../screens/AIScreen';
 import GuidesScreen from '../screens/GuidesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
@@ -46,11 +45,6 @@ const MainTabNavigator = (): React.JSX.Element => {
         name="Tracking"
         component={TrackingScreen}
         options={{tabBarLabel: 'Takip'}}
-      />
-      <Tab.Screen
-        name="AI"
-        component={AIScreen}
-        options={{tabBarLabel: 'Yapay Uzman'}}
       />
       <Tab.Screen
         name="Guides"
