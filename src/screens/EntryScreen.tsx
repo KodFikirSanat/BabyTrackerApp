@@ -1,67 +1,75 @@
 // src/screens/EntryScreen.tsx
 
 /**
- * @file Defines the EntryScreen, which serves as a gateway to the main application,
- * handling user authentication (Sign Up and Login).
+ * @file EntryScreen.tsx
+ * @description This screen serves as the main gateway for unauthenticated users.
+ *              It provides functionality for both signing up for a new account and
+ *              logging in with existing credentials using Firebase Authentication.
  *
  * @format
  */
 
-import React from 'react';
+import React, {useState} from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  Button,
-  TextInput,
-  Alert,
-  ActivityIndicator,
+  View, Text, StyleSheet, Button,
+  TextInput, Alert, ActivityIndicator
 } from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types/navigation';
 import auth from '@react-native-firebase/auth';
 
 /**
- * Type definition for the Entry screen's navigation props.
+ * @type EntryScreenProps
+ * @description Defines the navigation properties available to the EntryScreen.
  */
 type EntryScreenProps = NativeStackScreenProps<RootStackParamList, 'Entry'>;
 
 /**
- * The screen presented to the user after the splash screen.
- * It provides functionality for signing up and logging in.
- *
- * @param {EntryScreenProps} props - The component's props, used for navigation.
- * @returns {React.JSX.Element} The rendered entry screen component.
+ * @name EntryScreen
+ * @description The main component for the entry screen.
+ * @param {EntryScreenProps} props - The navigation props.
  */
-const EntryScreen = ({}: EntryScreenProps): React.JSX.Element => {
-  console.log('🚪🎨 EntryScreen: Rendering...');
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [loading, setLoading] = React.useState(false);
+const EntryScreen = ({navigation}: EntryScreenProps): React.JSX.Element => {
+  console.log('🚪✅ EntryScreen: Component has mounted.');
+
+  // --- State ---
+  // State to hold the user's input for email and password.
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  // State to manage loading indicators for async operations.
+  const [loading, setLoading] = useState(false);
 
   /**
-   * Handles user sign-up using email and password.
+   * @function handleSignUp
+   * @description Handles the user sign-up process using Firebase Auth.
    */
   const handleSignUp = async () => {
+    // Basic input validation.
     if (!email || !password) {
-      Alert.alert('Hata', 'Lütfen e-posta ve şifre girin.');
+      Alert.alert('Eksik Bilgi', 'Lütfen e-posta ve şifre girin.');
       return;
     }
+    
+    console.log(`🚪➕ EntryScreen.handleSignUp: Attempting to sign up with email: ${email}`);
     setLoading(true);
+
     try {
+      // Use Firebase Auth to create a new user account.
       await auth().createUserWithEmailAndPassword(email, password);
-      console.log('🚪✅ EntryScreen: User account created & signed in!');
-      // Navigation is now handled by the global onAuthStateChanged listener
+      console.log('🚪✅ EntryScreen.handleSignUp: User account created & signed in successfully.');
+      // After successful sign-up, the onAuthStateChanged listener in AuthContext
+      // will handle navigation automatically. We don't need to navigate here.
     } catch (error: any) {
-      console.error('🚪❌ EntryScreen: SignUp Error', error);
+      console.error('🔥🚪 EntryScreen.handleSignUp: Error during sign-up:', error);
+      // Provide user-friendly error messages based on the Firebase error code.
       if (error.code === 'auth/email-already-in-use') {
-        Alert.alert('Hata', 'Bu e-posta adresi zaten kullanılıyor!');
+        Alert.alert('Kayıt Başarısız', 'Bu e-posta adresi zaten kullanılıyor.');
       } else if (error.code === 'auth/invalid-email') {
-        Alert.alert('Hata', 'Geçersiz e-posta adresi.');
+        Alert.alert('Kayıt Başarısız', 'Geçersiz bir e-posta adresi girdiniz.');
       } else if (error.code === 'auth/weak-password') {
-        Alert.alert('Hata', 'Şifre çok zayıf. Lütfen daha güçlü bir şifre seçin.');
+        Alert.alert('Kayıt Başarısız', 'Şifreniz çok zayıf. Lütfen en az 6 karakterli bir şifre seçin.');
       } else {
-        Alert.alert('Bir Hata Oluştu', error.message);
+        Alert.alert('Bir Hata Oluştu', 'Kayıt işlemi sırasında bir sorun oluştu.');
       }
     } finally {
       setLoading(false);
@@ -69,29 +77,35 @@ const EntryScreen = ({}: EntryScreenProps): React.JSX.Element => {
   };
 
   /**
-   * Handles user login using email and password.
+   * @function handleLogin
+   * @description Handles the user login process using Firebase Auth.
    */
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Hata', 'Lütfen e-posta ve şifre girin.');
+      Alert.alert('Eksik Bilgi', 'Lütfen e-posta ve şifre girin.');
       return;
     }
+
+    console.log(`🚪➡️ EntryScreen.handleLogin: Attempting to log in with email: ${email}`);
     setLoading(true);
+
     try {
+      // Use Firebase Auth to sign in the user.
       await auth().signInWithEmailAndPassword(email, password);
-      console.log('🚪➡️ EntryScreen: User signed in!');
-      // Navigation is now handled by the global onAuthStateChanged listener
+      console.log('🚪✅ EntryScreen.handleLogin: User signed in successfully.');
+      // Similar to sign-up, onAuthStateChanged in AuthContext will handle navigation.
     } catch (error: any) {
-      console.error('🚪❌ EntryScreen: Login Error', error);
+      console.error('🔥🚪 EntryScreen.handleLogin: Error during login:', error);
       if (
         error.code === 'auth/user-not-found' ||
-        error.code === 'auth/wrong-password'
+        error.code === 'auth/wrong-password' ||
+        error.code === 'auth/invalid-credential'
       ) {
-        Alert.alert('Hata', 'Geçersiz e-posta veya şifre.');
+        Alert.alert('Giriş Başarısız', 'Geçersiz e-posta veya şifre.');
       } else if (error.code === 'auth/invalid-email') {
-        Alert.alert('Hata', 'Geçersiz e-posta adresi.');
+        Alert.alert('Giriş Başarısız', 'Geçersiz bir e-posta adresi girdiniz.');
       } else {
-        Alert.alert('Bir Hata Oluştu', error.message);
+        Alert.alert('Bir Hata Oluştu', 'Giriş işlemi sırasında bir sorun oluştu.');
       }
     } finally {
       setLoading(false);
@@ -101,6 +115,8 @@ const EntryScreen = ({}: EntryScreenProps): React.JSX.Element => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bebeğim'e Hoş Geldiniz!</Text>
+      
+      {/* Email Input */}
       <TextInput
         style={styles.input}
         placeholder="E-posta"
@@ -108,18 +124,21 @@ const EntryScreen = ({}: EntryScreenProps): React.JSX.Element => {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
-        editable={!loading}
+        autoComplete="email"
       />
+      
+      {/* Password Input */}
       <TextInput
         style={styles.input}
         placeholder="Şifre"
         value={password}
         onChangeText={setPassword}
-        secureTextEntry
-        editable={!loading}
+        secureTextEntry // Hides the password characters.
       />
+
+      {/* If an operation is in progress, show an indicator, otherwise show buttons. */}
       {loading ? (
-        <ActivityIndicator size="large" color="#e5d4f1" style={{marginTop: 20}} />
+        <ActivityIndicator size="large" color="#6b9ac4" style={styles.loader} />
       ) : (
         <View style={styles.buttonContainer}>
           <Button title="Kayıt Ol" onPress={handleSignUp} />
@@ -130,6 +149,7 @@ const EntryScreen = ({}: EntryScreenProps): React.JSX.Element => {
   );
 };
 
+// --- Styles ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -143,7 +163,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#333333',
-    marginBottom: 20,
+    marginBottom: 30,
   },
   input: {
     width: '100%',
@@ -151,8 +171,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 1,
     borderColor: 'gray',
-    marginBottom: 10,
-    borderRadius: 5,
+    marginBottom: 15,
+    borderRadius: 8,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -160,6 +180,9 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 10,
   },
+  loader: {
+      marginTop: 20,
+  }
 });
 
 export default EntryScreen;

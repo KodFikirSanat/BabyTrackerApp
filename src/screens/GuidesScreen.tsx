@@ -1,121 +1,151 @@
-import React, { useState, useEffect } from 'react';
+// src/screens/GuidesScreen.tsx
+
+/**
+ * @file GuidesScreen.tsx
+ * @description This screen displays a list of informational guides for the user.
+ *              Each item in the list is tappable and navigates to the
+ *              GuideDetailScreen to show the full content.
+ *
+ * @format
+ */
+
+import React from 'react';
 import {
-  SafeAreaView,
   View,
   Text,
   FlatList,
-  StyleSheet,
-  ActivityIndicator,
-  Image,
   TouchableOpacity,
+  StyleSheet,
+  Image,
 } from 'react-native';
-import firestore from '@react-native-firebase/firestore';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {GuidesStackParamList} from '../navigation/GuidesStackNavigator';
 
-// Her bir rehber kartını temsil eden component
-// Bu component'i ayrı bir dosyada oluşturmak en iyi pratiktir.
-const GuideCard = ({ item, onPress }) => (
-  <TouchableOpacity style={styles.card} onPress={onPress}>
-    <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
-    <View style={styles.cardContent}>
-      <Text style={styles.cardTitle}>{item.title}</Text>
-      <Text style={styles.cardExcerpt}>{item.excerpt}</Text>
-    </View>
-  </TouchableOpacity>
-);
+/**
+ * @interface Guide
+ * @description Defines the data structure for a single guide item.
+ */
+interface Guide {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  imageUrl?: string;
+}
 
-const GuidesScreen = ({ navigation }) => {
-  // Yükleme durumunu yönetmek için state
-  const [loading, setLoading] = useState(true);
-  
-  // Firestore'dan gelen rehberleri saklamak için state
-  const [guides, setGuides] = useState([]);
+// --- Static Data ---
+// In a real application, this data would likely be fetched from a CMS or Firestore.
+// For now, it is defined statically within the component.
+const GUIDES_DATA: Guide[] = [
+  {
+    id: '1',
+    title: 'İlk 6 Ayda Uyku Düzeni',
+    summary: 'Bebeğinizin uyku alışkanlıklarını anlamak ve yönetmek için ipuçları.',
+    content: 'Detaylı içerik burada yer alacak... Bebeğinizin ilk aylarında uyku düzeni sık sık değişir. Gündüz ve gece ayrımını öğrenmesine yardımcı olmak önemlidir. Yatmadan önce sakinleştirici bir rutin oluşturmak, örneğin ılık bir banyo veya hafif bir masaj, bebeğinizin daha kolay uykuya dalmasını sağlayabilir.',
+    imageUrl: 'https://via.placeholder.com/400x200.png/6b9ac4/ffffff?text=Uyku',
+  },
+  {
+    id: '2',
+    title: 'Ek Gıdaya Geçiş',
+    summary: 'Bebeğinizi katı gıdalarla tanıştırmanın doğru zamanı ve yolu.',
+    content: 'Detaylı içerik burada yer alacak... Ek gıdaya genellikle 6. ay civarında başlanır. Bebeğinizin başını dik tutabilmesi ve yiyeceklere ilgi göstermesi gibi işaretleri gözlemleyin. Püre haline getirilmiş tek bileşenli sebze ve meyvelerle başlamak en iyisidir.',
+    imageUrl: 'https://via.placeholder.com/400x200.png/a3c46b/ffffff?text=Beslenme',
+  },
+  // Add more guides as needed
+];
 
-  useEffect(() => {
-    // Firestore'daki 'guides' koleksiyonuna sorgu atıyoruz
-    const subscriber = firestore()
-      .collection('guides')
-      .onSnapshot(querySnapshot => {
-        const guidesList = [];
 
-        querySnapshot.forEach(documentSnapshot => {
-          // Her bir dokümanı listeye ekliyoruz.
-          // Dokümanın ID'sini de veriye eklemek önemlidir,
-          // çünkü FlatList'te 'key' olarak ve navigasyon için kullanacağız.
-          guidesList.push({
-            ...documentSnapshot.data(),
-            id: documentSnapshot.id,
-          });
-        });
+/**
+ * @type GuidesScreenProps
+ * @description Defines the navigation properties available to the GuidesScreen.
+ */
+type GuidesScreenProps = NativeStackScreenProps<GuidesStackParamList, 'GuidesList'>;
 
-        setGuides(guidesList);
-        setLoading(false);
-      });
+/**
+ * @name GuidesScreen
+ * @description The main component for displaying the list of guides.
+ * @param {GuidesScreenProps} props - The navigation props.
+ */
+const GuidesScreen = ({navigation}: GuidesScreenProps): React.JSX.Element => {
+  console.log('📚✅ GuidesScreen: Component has mounted.');
 
-    // Component ekrandan kaldırıldığında Firestore dinleyicisini kapat
-    return () => subscriber();
-  }, []);
-
-  // Veriler yüklenirken bir yükleme göstergesi göster
-  if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
-  }
-
-  // Kart tıklandığında detay sayfasına yönlendirme fonksiyonu
-  const handleCardPress = (item) => {
-    navigation.navigate('GuideDetail', { guide: item });
-  };
+  /**
+   * @function renderGuideItem
+   * @description Renders a single item in the guides list.
+   * @param {object} params - The parameters passed by FlatList's renderItem.
+   * @param {Guide} params.item - The guide data for the current item.
+   * @returns {React.JSX.Element} A touchable list item component.
+   */
+  const renderGuideItem = ({item}: {item: Guide}): React.JSX.Element => (
+    <TouchableOpacity
+      style={styles.itemContainer}
+      onPress={() => {
+        console.log(`📚➡️ GuidesScreen: Navigating to GuideDetail for "${item.title}"`);
+        // Navigate to the detail screen, passing the entire guide object as a parameter.
+        navigation.navigate('GuideDetail', {guide: item});
+      }}>
+      {item.imageUrl && (
+        <Image source={{uri: item.imageUrl}} style={styles.itemImage} />
+      )}
+      <View style={styles.itemTextContainer}>
+        <Text style={styles.itemTitle}>{item.title}</Text>
+        <Text style={styles.itemSummary}>{item.summary}</Text>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <Text style={styles.header}>Faydalı Bilgiler</Text>
       <FlatList
-        data={guides}
-        renderItem={({ item }) => (
-          <GuideCard 
-            item={item} 
-            onPress={() => handleCardPress(item)} 
-          />
-        )}
+        data={GUIDES_DATA}
+        renderItem={renderGuideItem}
         keyExtractor={item => item.id}
-        numColumns={2} // Dökümanda belirtildiği gibi iki sütunlu yapı
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
-// Sayfanın ve kartların stilleri
+// --- Styles ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f9fa',
   },
-  card: {
-    flex: 1,
-    margin: 8,
-    backgroundColor: 'white',
-    borderRadius: 8,
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    padding: 20,
+    textAlign: 'center',
+    backgroundColor: '#fff',
+  },
+  itemContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginVertical: 8,
+    marginHorizontal: 16,
     elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    overflow: 'hidden', // Ensures the image corners are also rounded.
   },
-  cardImage: {
+  itemImage: {
     width: '100%',
-    height: 100,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
+    height: 150,
   },
-  cardContent: {
-    padding: 12,
+  itemTextContainer: {
+    padding: 15,
   },
-  cardTitle: {
-    fontSize: 16,
+  itemTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 5,
   },
-  cardExcerpt: {
-    fontSize: 12,
-    color: '#666',
+  itemSummary: {
+    fontSize: 14,
+    color: 'gray',
   },
 });
 

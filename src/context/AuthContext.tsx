@@ -1,20 +1,22 @@
 // src/context/AuthContext.tsx
 
 /**
- * @file Manages global user authentication state using React Context.
- * It provides the current user and a loading status to the entire application.
+ * @file AuthContext.tsx
+ * @description This file establishes a global state management system for user authentication
+ *              using React Context. It provides a way for any component in the application
+ *              to access the current user's authentication status without prop drilling.
  *
  * @format
  */
 
-import React, {createContext, useContext, useState, useEffect} from 'react';
-import auth from '@react-native-firebase/auth';
-import {FirebaseAuthTypes} from '@react-native-firebase/auth';
+import React, {createContext, useContext, useState, useEffect, ReactNode} from 'react';
+import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
 
 /**
- * The shape of the authentication context.
- * user: The current Firebase user object or null if not authenticated.
- * loading: A boolean that is true while the authentication state is being determined.
+ * @interface AuthContextType
+ * @description Defines the shape of the data that the AuthContext will provide.
+ * @property {FirebaseAuthTypes.User | null} user - Holds the Firebase user object if logged in, otherwise null.
+ * @property {boolean} loading - True when the app is initially trying to determine the auth state, false afterward.
  */
 interface AuthContextType {
   user: FirebaseAuthTypes.User | null;
@@ -22,48 +24,61 @@ interface AuthContextType {
 }
 
 /**
- * React Context for authentication.
+ * @const AuthContext
+ * @description The actual React Context object. It is initialized with a default shape.
+ *              Components will subscribe to this context to receive auth updates.
  */
+// The default value is provided for type-safety, but will be immediately overwritten by the Provider.
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
 });
 
 /**
- * A provider component that wraps the application and makes auth state available to any
- * child components that call useAuth().
- *
- * It listens to Firebase's onAuthStateChanged to automatically update the user state.
- *
- * @param {object} props - The component props.
- * @param {React.ReactNode} props.children - The child components to render.
- * @returns {React.JSX.Element} The rendered provider.
+ * @name AuthProvider
+ * @description A component that acts as the supplier of the authentication state.
+ *              It should wrap any part of the app that needs access to user data.
+ *              It sets up a real-time listener to Firebase Auth.
+ * @param {object} props - Component properties.
+ * @param {ReactNode} props.children - The child components that will be rendered within this provider.
  */
-export const AuthProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.JSX.Element => {
+export const AuthProvider = ({children}: {children: ReactNode}): React.JSX.Element => {
+  console.log('📦✅ AuthProvider: Component has mounted.');
+
+  // State to hold the current user object provided by Firebase.
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
+  // State to track the initial check of authentication status.
   const [loading, setLoading] = useState(true);
 
+  // useEffect hook to set up the Firebase authentication listener when the component mounts.
   useEffect(() => {
-    // onAuthStateChanged returns an unsubscriber
+    console.log('👂🔥 AuthProvider.useEffect: Setting up Firebase auth listener...');
+    
+    // onAuthStateChanged is a real-time listener from Firebase.
+    // It returns an `unsubscribe` function which is crucial for cleanup.
     const subscriber = auth().onAuthStateChanged(userState => {
+      // This function is called whenever a user signs in or out.
       console.log(
-        '🔒 AuthProvider: onAuthStateChanged triggered. User:',
-        userState ? userState.email : null,
+        `👤🔄 AuthProvider.onAuthStateChanged: Auth state changed. User is now: ${userState ? userState.email : 'null'}`
       );
       setUser(userState);
+
+      // We only want to set loading to false on the very first check.
       if (loading) {
+        console.log('🏁⏳ AuthProvider.onAuthStateChanged: Initial auth check finished.');
         setLoading(false);
       }
     });
 
-    // Unsubscribe on unmount
-    return subscriber;
-  }, [loading]);
+    // The cleanup function: When the AuthProvider component is unmounted (e.g., app closes),
+    // we must unsubscribe from the listener to prevent memory leaks.
+    return () => {
+      console.log('🧹👂 AuthProvider.useEffect: Cleaning up Firebase auth listener.');
+      subscriber();
+    };
+  }, []); // The empty dependency array [] ensures this effect runs only once on mount.
 
+  // The Provider component makes the `user` and `loading` state available to all of its children.
   return (
     <AuthContext.Provider value={{user, loading}}>
       {children}
@@ -72,9 +87,10 @@ export const AuthProvider = ({
 };
 
 /**
- * Custom hook to use the authentication context.
- *
- * @returns {AuthContextType} The authentication context value.
+ * @name useAuth
+ * @description A custom hook that simplifies the process of accessing the auth context.
+ *              Instead of using `useContext(AuthContext)` in every component, we can just call `useAuth()`.
+ * @returns {AuthContextType} The current value of the AuthContext (user and loading state).
  */
 export const useAuth = (): AuthContextType => {
   return useContext(AuthContext);

@@ -1,66 +1,174 @@
 // src/screens/AIScreen.tsx
 
 /**
- * @file Defines the AIScreen, providing an interface for users
- * to interact with an AI assistant.
+ * @file AIScreen.tsx
+ * @description This screen provides an interface for interacting with an AI model.
+ *              It allows the user to ask questions and receive AI-generated advice
+ *              related to baby care. The interaction history is displayed in a
+ *              chat-like format.
  *
  * @format
  */
 
-import React, {useEffect} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-import type {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
-import {MainTabParamList} from '../types/navigation';
+import React, {useState, useRef} from 'react';
+import {
+  View, Text, TextInput, Button, StyleSheet,
+  ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform
+} from 'react-native';
 
 /**
- * Type definition for the AI screen's navigation props.
+ * @interface Message
+ * @description Defines the structure for a single message in the chat history.
  */
-type AIScreenProps = BottomTabScreenProps<MainTabParamList, 'AI'>;
+interface Message {
+  role: 'user' | 'model'; // 'user' for user's question, 'model' for AI's response.
+  text: string;
+}
 
 /**
- * A screen where users can ask questions and receive AI-powered advice.
- * This component is part of the main tab navigation.
- *
- * @param {AIScreenProps} props - The component's props, used for navigation event listening.
- * @returns {React.JSX.Element} The rendered AI screen.
+ * @name AIScreen
+ * @description The main component for the AI interaction screen.
  */
-const AIScreen = ({navigation}: AIScreenProps): React.JSX.Element => {
-  console.log('🤖🎨 AIScreen: Rendering...');
+const AIScreen = (): React.JSX.Element => {
+  console.log('🤖✅ AIScreen: Component has mounted.');
 
-  useEffect(() => {
-    console.log('🤖✅ AIScreen: Component did mount.');
+  // --- State ---
+  const [inputValue, setInputValue] = useState('');
+  const [chatHistory, setChatHistory] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(false);
 
-    const unsubscribeFocus = navigation.addListener('focus', () => {
-      console.log('🤖👁️ AIScreen: Screen is focused.');
-    });
+  // --- Refs ---
+  // A ref to the ScrollView to programmatically scroll to the bottom.
+  const scrollViewRef = useRef<ScrollView>(null);
 
-    const unsubscribeBlur = navigation.addListener('blur', () => {
-      console.log('🤖💨 AIScreen: Screen is blurred.');
-    });
+  /**
+   * @function handleSend
+   * @description Handles the action of sending a user's question to the AI model.
+   *              It updates the chat history and simulates an AI response.
+   */
+  const handleSend = async () => {
+    if (!inputValue.trim()) return; // Do not send empty messages.
 
-    return () => {
-      unsubscribeFocus();
-      unsubscribeBlur();
-      console.log('🤖🧹 AIScreen: Listeners cleared on unmount.');
-    };
-  }, [navigation]);
+    const userMessage: Message = { role: 'user', text: inputValue };
+    console.log(`🤖💬 AIScreen.handleSend: User sent message: "${userMessage.text}"`);
+
+    // Update chat history with the user's new message.
+    setChatHistory(prev => [...prev, userMessage]);
+    setInputValue('');
+    setLoading(true);
+
+    // --- AI Interaction Simulation ---
+    // In a real application, you would make an API call to your AI backend here.
+    // For now, we simulate a delay and a canned response.
+    setTimeout(() => {
+      const modelResponse: Message = {
+        role: 'model',
+        text: `"${userMessage.text}" ile ilgili olarak, bebeğinizin gelişimi için şu an en iyi yaklaşım... (Bu bir simülasyon yanıtıdır.)`,
+      };
+      console.log(`🤖💬 AIScreen.handleSend: Model responded: "${modelResponse.text}"`);
+      
+      setChatHistory(prev => [...prev, modelResponse]);
+      setLoading(false);
+
+      // Automatically scroll to the bottom to show the new message.
+      setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
+    }, 1500);
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Yapay Zeka Sayfası</Text>
-    </View>
+    // KeyboardAvoidingView adjusts the screen layout when the keyboard appears.
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={90}
+    >
+      <Text style={styles.title}>Yapay Zeka Danışmanı</Text>
+      
+      {/* Scrollable area for displaying the chat history */}
+      <ScrollView
+        style={styles.chatContainer}
+        ref={scrollViewRef}
+        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+      >
+        {chatHistory.map((message, index) => (
+          <View
+            key={index}
+            style={[
+              styles.messageBubble,
+              message.role === 'user' ? styles.userMessage : styles.modelMessage,
+            ]}
+          >
+            <Text style={styles.messageText}>{message.text}</Text>
+          </View>
+        ))}
+        {loading && <ActivityIndicator style={{margin: 10}} />}
+      </ScrollView>
+      
+      {/* Input area for the user's question */}
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          value={inputValue}
+          onChangeText={setInputValue}
+          placeholder="Sorunuzu buraya yazın..."
+          editable={!loading} // Disable input while AI is "thinking".
+        />
+        <Button title="Gönder" onPress={handleSend} disabled={loading} />
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
+// --- Styles ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
+    textAlign: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  chatContainer: {
+    flex: 1,
+    padding: 10,
+  },
+  messageBubble: {
+    padding: 15,
+    borderRadius: 20,
+    marginBottom: 10,
+    maxWidth: '80%',
+  },
+  userMessage: {
+    backgroundColor: '#6b9ac4',
+    alignSelf: 'flex-end',
+  },
+  modelMessage: {
+    backgroundColor: '#e5e5ea',
+    alignSelf: 'flex-start',
+  },
+  messageText: {
+    fontSize: 16,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#fff',
+  },
+  input: {
+    flex: 1,
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    marginRight: 10,
   },
 });
 
