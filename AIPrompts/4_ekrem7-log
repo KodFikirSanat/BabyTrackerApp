@@ -1,0 +1,26 @@
+## SESSION START: 2025-08-01
+
+**USER GOAL:** Remove the AI feature from the project and establish the `AIPrompts` logging system.
+
+**AI ACTION LOG:**
+
+*   **TIMESTAMP:** `2025-08-02 01:44:41`
+*   **ACTION:** `delete_file`
+*   **TARGET:** `src/screens/AIScreen.tsx`
+*   **REASON:** To remove the primary component file associated with the AI feature as requested by the user.
+---
+*   **TIMESTAMP:** `2025-08-02 01:44:41`
+*   **ACTION:** `edit_file`
+*   **TARGET:** `src/types/navigation.ts`
+*   **REASON:** To remove the `AI` type from `MainTabParamList`, ensuring the navigation system's type contract no longer references the deleted screen.
+---
+*   **TIMESTAMP:** `2025-08-02 01:44:41`
+*   **ACTION:** `edit_file`
+*   **TARGET:** `src/navigation/MainTabNavigator.tsx`
+*   **REASON:** To remove the `AIScreen` import and the corresponding `Tab.Screen` definition, completing the removal of the AI feature from the user-facing navigation.
+---
+*   **TIMESTAMP:** `2025-08-02 01:44:41`
+*   **ACTION:** `create_file`
+*   **TARGET:** `AIPrompts/4_ekrem7-log`
+*   **REASON:** To establish the logging file for the current and future development sessions as per the new workflow.
+---
