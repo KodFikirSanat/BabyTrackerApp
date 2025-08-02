@@ -48,9 +48,6 @@ const MainTabNavigator = (): React.JSX.Element => {
         component={TrackingScreen}
         options={{tabBarLabel: 'Takip'}}
       />
-      
-      
-
       <Tab.Screen
         name="AI"
         component={AIScreen}
@@ -60,6 +57,11 @@ const MainTabNavigator = (): React.JSX.Element => {
         name="Guides"
         component={GuidesStackNavigator}
         options={{tabBarLabel: 'Rehberler'}}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{tabBarLabel: 'Profil'}}
       />
     </Tab.Navigator>
   );

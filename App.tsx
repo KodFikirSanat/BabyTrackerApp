@@ -9,87 +9,90 @@
  */
 
 import React, {useEffect} from 'react';
-import {NavigationContainer} from '@react-navigation/native';
-import firestore from '@react-native-firebase/firestore';
-import messaging from '@react-native-firebase/messaging';
+import {NavigationContainer, useNavigation} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import firestore from '@react-native-firebase/firestore';
+import messaging from '@react-native-firebase/messaging';
 
 import {AuthProvider, useAuth} from './src/context/AuthContext';
 import {BabyProvider, useBaby} from './src/context/BabyContext';
+import {RootStackParamList} from './src/types/navigation';
 
 import SplashScreen from './src/screens/SplashScreen';
 import EntryScreen from './src/screens/EntryScreen';
 import AddBabyScreen from './src/screens/AddBabyScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
 import MainTabNavigator from './src/navigation/MainTabNavigator';
-import {RootStackParamList} from './src/types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-/**
- * The core navigation logic. It decides which screen to show based on
- * the authentication and baby data loading status.
- */
-const RootNavigator = () => {
+const NavigationLogic = () => {
   const {user, loading: authLoading} = useAuth();
   const {babies, loading: babiesLoading} = useBaby();
+  const navigation = useNavigation();
 
   useEffect(() => {
+    // This effect handles the navigation logic based on auth and data state.
+    if (authLoading || babiesLoading) {
+      // Don't navigate until both are loaded. The Splash screen is shown by default.
+      return;
+    }
+
+    let routeName: keyof RootStackParamList;
+    if (!user) {
+      routeName = 'Entry';
+    } else if (babies.length === 0) {
+      routeName = 'AddBaby';
+    } else {
+      routeName = 'MainTabs';
+    }
+
+    console.log(`🔄 Navigating to: ${routeName}`);
+    navigation.reset({
+      index: 0,
+      routes: [{name: routeName}],
+    });
+  }, [user, babies, authLoading, babiesLoading, navigation]);
+
+  useEffect(() => {
+    // This effect handles FCM token registration.
     const setupNotifications = async () => {
       if (user) {
         try {
-          // 1. Request Permission
           await messaging().requestPermission();
-
-          // 2. Get Token
           const fcmToken = await messaging().getToken();
-
           if (fcmToken) {
             console.log('📱 FCM Token:', fcmToken);
-            // 3. Save Token to Firestore
-            await firestore().collection('users').doc(user.uid).set(
-              {
-                fcmToken: fcmToken,
-              },
-              {merge: true}, // Use merge to avoid overwriting other user data
-            );
+            await firestore()
+              .collection('users')
+              .doc(user.uid)
+              .set({fcmToken}, {merge: true});
           }
         } catch (error) {
           console.error('Error setting up notifications:', error);
         }
       }
     };
-
     setupNotifications();
   }, [user]);
 
-  console.log(
-    `📱🎨 RootNavigator: AuthLoading: ${authLoading}, BabiesLoading: ${babiesLoading}, User: ${user?.email}, Babies: ${babies.length}`
-  );
-
-  // While either context is loading, show the splash screen.
-  if (authLoading || babiesLoading) {
-    return <Stack.Screen name="Splash" component={SplashScreen} />;
-  }
-
-  // If there is no user, show the entry/login screen.
-  if (!user) {
-    return <Stack.Screen name="Entry" component={EntryScreen} />;
-  }
-
-  // If the user is logged in but has no babies, force them to the AddBaby screen.
-  // This screen is now part of the root stack, not the tab navigator.
-  if (user && babies.length === 0) {
-    return <Stack.Screen name="AddBaby" component={AddBabyScreen} />;
-  }
-
-  // If the user is logged in and has at least one baby, show the main app.
-  return <Stack.Screen name="MainTabs" component={MainTabNavigator} />;
+  return null; // This component does not render anything.
 };
 
-/**
- * The root component of the application.
- */
+const AppNavigator = () => (
+  <>
+    <NavigationLogic />
+    <Stack.Navigator screenOptions={{headerShown: false}}>
+      <Stack.Screen name="Splash" component={SplashScreen} />
+      <Stack.Screen name="Entry" component={EntryScreen} />
+      <Stack.Screen name="AddBaby" component={AddBabyScreen} />
+      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+      <Stack.Screen name="Profile" component={ProfileScreen} />
+    </Stack.Navigator>
+  </>
+);
+
 function App(): React.JSX.Element {
   return (
     <SafeAreaProvider>

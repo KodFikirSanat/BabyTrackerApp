@@ -15,11 +15,11 @@ import type {NavigatorScreenParams} from '@react-navigation/native';
  * A value of `undefined` indicates that the route takes no parameters.
  */
 export type MainTabParamList = {
-  Home: undefined; // Keeping Home for now, will adjust if needed
+  Home: undefined;
   Tracking: undefined;
-  // AddBaby is removed from here to make it a root-level screen
   AI: undefined;
   Guides: undefined;
+  Profile: undefined;
 };
 
 /**
@@ -30,14 +30,12 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   Splash: undefined;
   Entry: undefined;
-  AddBaby: undefined; // Screen for adding the first baby, now at the root level
-  GuideDetail: {guide: {title: string; content: string; imageUrl?: string}};
+  AddBaby: undefined;
   /**
    * This route represents the entire nested bottom tab navigator.
    * `NavigatorScreenParams` allows the root stack to receive and pass down
    * navigation parameters to the screens within `MainTabParamList`.
    */
   MainTabs: NavigatorScreenParams<MainTabParamList>;
-  AddBaby: undefined;
-  Profile: undefined; // Profile is now a root stack screen
+  Profile: undefined;
 };
