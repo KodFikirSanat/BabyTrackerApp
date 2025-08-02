@@ -24,3 +24,34 @@
 *   **TARGET:** `AIPrompts/4_ekrem7-log`
 *   **REASON:** To establish the logging file for the current and future development sessions as per the new workflow.
 ---
+## SESSION START: 2025-08-02
+
+**USER GOAL:** Integrate Firebase into the project, including Auth, Firestore, and Messaging.
+
+**AI ACTION LOG:**
+
+*   **TIMESTAMP:** `2025-08-02 01:53:27`
+*   **ACTION:** `run_command`
+*   **COMMAND:** `npm install @react-native-firebase/app`
+*   **REASON:** To install the core Firebase library for React Native.
+---
+*   **TIMESTAMP:** `2025-08-02 01:53:27`
+*   **ACTION:** `run_command`
+*   **COMMAND:** `npm install @react-native-firebase/auth @react-native-firebase/firestore @react-native-firebase/messaging`
+*   **REASON:** To install the necessary modules for Authentication, Firestore database, and Cloud Messaging services.
+---
+*   **TIMESTAMP:** `2025-08-02 01:53:27`
+*   **ACTION:** `rewrite_file`
+*   **TARGET:** `android/app/google-services.json`
+*   **REASON:** To add the Firebase project configuration file, linking the app to the correct Firebase project.
+---
+*   **TIMESTAMP:** `2025-08-02 01:53:27`
+*   **ACTION:** `edit_file`
+*   **TARGET:** `android/build.gradle`
+*   **REASON:** To add the Google Services Gradle plugin classpath, a requirement for Firebase on Android.
+---
+*   **TIMESTAMP:** `2025-08-02 01:53:27`
+*   **ACTION:** `edit_file`
+*   **TARGET:** `android/app/build.gradle`
+*   **REASON:** To apply the Google Services plugin and add the Firebase Bill of Materials (BoM) and required SDKs to the app-level Gradle configuration.
+---
