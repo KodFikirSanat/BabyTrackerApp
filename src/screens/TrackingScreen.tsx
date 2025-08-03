@@ -167,7 +167,13 @@ const TrackingScreen = () => {
           const fetchedLogs: AnyLog[] = snapshot.docs.map(doc => ({ id: doc.id, category: collectionName.replace('Logs', '') as Category, ...doc.data() } as AnyLog));
           setLogs(prevLogs => {
             const otherLogs = prevLogs.filter(log => log.category !== collectionName.replace('Logs', ''));
-            return [...otherLogs, ...fetchedLogs].sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
+            // JULES: Added null-safe sorting to prevent crashes from pending server timestamps.
+            // When a new log is created, `createdAt` can be temporarily null in the local snapshot.
+            return [...otherLogs, ...fetchedLogs].sort((a, b) => {
+              const timeA = a.createdAt?.toMillis() || 0;
+              const timeB = b.createdAt?.toMillis() || 0;
+              return timeB - timeA;
+            });
           });
           setLoading(false);
         }, error => {
