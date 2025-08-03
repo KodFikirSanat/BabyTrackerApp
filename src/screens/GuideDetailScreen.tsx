@@ -25,14 +25,15 @@ type GuideDetailScreenProps = NativeStackScreenProps<GuidesStackParamList, 'Guid
  * @name GuideDetailScreen
  * @description The main component for displaying a single guide.
  * @param {GuideDetailScreenProps} props - The navigation props, containing the route.
+ * @returns {React.JSX.Element} A React Element representing the guide detail screen.
  */
 const GuideDetailScreen = ({route}: GuideDetailScreenProps): React.JSX.Element => {
-  console.log('📚✅ GuideDetailScreen: Component has mounted.');
+  console.log('📄✅ GuideDetailScreen: Component has mounted.');
   
   // --- Extracting data from navigation ---
   // The 'guide' object is passed as a parameter when navigating to this screen.
   const {guide} = route.params;
-  console.log(`📚🔍 GuideDetailScreen: Displaying details for guide: "${guide.title}"`);
+  console.log(`📄🎨 GuideDetailScreen: Rendering details for guide: "${guide.title}"`);
 
   return (
     <ScrollView style={styles.container}>

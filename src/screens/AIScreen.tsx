@@ -28,6 +28,7 @@ interface Message {
 /**
  * @name AIScreen
  * @description The main component for the AI interaction screen.
+ * @returns {React.JSX.Element} A React Element representing the AI chat screen.
  */
 const AIScreen = (): React.JSX.Element => {
   console.log('🤖✅ AIScreen: Component has mounted.');
@@ -50,7 +51,7 @@ const AIScreen = (): React.JSX.Element => {
     if (!inputValue.trim()) return; // Do not send empty messages.
 
     const userMessage: Message = { role: 'user', text: inputValue };
-    console.log(`🤖💬 AIScreen.handleSend: User sent message: "${userMessage.text}"`);
+    console.log(`🤖➡️ AIScreen.handleSend: User sent message.`);
 
     // Update chat history with the user's new message.
     setChatHistory(prev => [...prev, userMessage]);
@@ -65,7 +66,7 @@ const AIScreen = (): React.JSX.Element => {
         role: 'model',
         text: `"${userMessage.text}" ile ilgili olarak, bebeğinizin gelişimi için şu an en iyi yaklaşım... (Bu bir simülasyon yanıtıdır.)`,
       };
-      console.log(`🤖💬 AIScreen.handleSend: Model responded: "${modelResponse.text}"`);
+      console.log(`🤖✅ AIScreen.handleSend: Model responded successfully.`);
       
       setChatHistory(prev => [...prev, modelResponse]);
       setLoading(false);

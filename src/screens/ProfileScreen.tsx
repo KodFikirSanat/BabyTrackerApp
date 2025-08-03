@@ -15,11 +15,17 @@ import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useAuth} from '../context/AuthContext';
 import {RootStackParamList} from '../types/navigation';
 
+/**
+ * @type ProfileScreenProps
+ * @description Defines the navigation properties available to the ProfileScreen.
+ */
 type ProfileScreenProps = NativeStackScreenProps<RootStackParamList, 'Profile'>;
 
 /**
  * @name ProfileScreen
  * @description The main component for the user profile screen.
+ * @param {ProfileScreenProps} props - The navigation props.
+ * @returns {React.JSX.Element} A React Element representing the profile screen.
  */
 const ProfileScreen = ({navigation}: ProfileScreenProps): React.JSX.Element => {
   console.log('👤✅ ProfileScreen: Component has mounted.');
@@ -28,8 +34,12 @@ const ProfileScreen = ({navigation}: ProfileScreenProps): React.JSX.Element => {
   const {user} = useAuth();
   const [loading, setLoading] = useState(false); // State to manage logout loading
 
+  /**
+   * @function handleAddBaby
+   * @description Navigates the user to the AddBaby screen.
+   */
   const handleAddBaby = () => {
-    console.log('👤👶 ProfileScreen.handleAddBaby: Navigating to AddBaby screen.');
+    console.log('👤➡️ ProfileScreen.handleAddBaby: Navigating to AddBaby screen.');
     navigation.navigate('AddBaby');
   };
   
@@ -39,14 +49,14 @@ const ProfileScreen = ({navigation}: ProfileScreenProps): React.JSX.Element => {
    *              A loading state is used to prevent user interaction during the process.
    */
   const handleLogout = async () => {
-    console.log(`👤🚪 ProfileScreen.handleLogout: Attempting to log out user: ${user?.email}`);
+    console.log(`👤➡️ ProfileScreen.handleLogout: Attempting to log out user: ${user?.email}`);
     setLoading(true); // Disable button
     try {
       await auth().signOut();
       console.log('👤✅ ProfileScreen.handleLogout: User signed out successfully.');
       // Navigation is handled automatically by the AuthContext listener.
     } catch (error) {
-      console.error('🔥👤 ProfileScreen.handleLogout: Error signing out:', error);
+      console.error('👤❌ ProfileScreen.handleLogout: Error signing out:', error);
       Alert.alert('Hata', 'Çıkış yapılırken bir sorun oluştu.');
     } finally {
       // This part will not be reached if logout is successful, as the component will unmount.
