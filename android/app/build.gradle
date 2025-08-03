@@ -70,6 +70,13 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'org.webkit:android-jsc:+'
 
+// JULES: Added properties to read release signing variables from gradle.properties
+def keystorePropertiesFile = rootProject.file('android/gradle.properties')
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -90,6 +97,14 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            if (keystoreProperties['MYAPP_RELEASE_STORE_FILE'] != null) {
+                storeFile file(keystoreProperties['MYAPP_RELEASE_STORE_FILE'])
+                storePassword keystoreProperties['MYAPP_RELEASE_STORE_PASSWORD']
+                keyAlias keystoreProperties['MYAPP_RELEASE_KEY_ALIAS']
+                keyPassword keystoreProperties['MYAPP_RELEASE_KEY_PASSWORD']
+            }
+        }
     }
     buildTypes {
         debug {
@@ -98,7 +113,7 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
