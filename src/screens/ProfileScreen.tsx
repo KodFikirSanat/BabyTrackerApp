@@ -8,8 +8,8 @@
  * @format
  */
 
-import React from 'react';
-import {View, Text, Button, StyleSheet, Alert} from 'react-native';
+import React, {useState} from 'react';
+import {View, Text, Button, StyleSheet, Alert, ActivityIndicator} from 'react-native';
 import auth from '@react-native-firebase/auth';
 import {useAuth} from '../context/AuthContext';
 
@@ -21,23 +21,28 @@ const ProfileScreen = (): React.JSX.Element => {
   console.log('👤✅ ProfileScreen: Component has mounted.');
 
   // --- Hooks ---
-  // Subscribing to the AuthContext to get the current user's data.
   const {user} = useAuth();
+  const [loading, setLoading] = useState(false); // State to manage logout loading
   
   /**
    * @function handleLogout
    * @description Handles the user logout process by calling Firebase Auth's signOut method.
+   *              A loading state is used to prevent user interaction during the process.
    */
   const handleLogout = async () => {
     console.log(`👤🚪 ProfileScreen.handleLogout: Attempting to log out user: ${user?.email}`);
+    setLoading(true); // Disable button
     try {
       await auth().signOut();
       console.log('👤✅ ProfileScreen.handleLogout: User signed out successfully.');
-      // After sign out, the onAuthStateChanged listener in AuthContext will automatically
-      // update the state, and the AppNavigator will redirect to the Entry screen.
+      // Navigation is handled automatically by the AuthContext listener.
     } catch (error) {
       console.error('🔥👤 ProfileScreen.handleLogout: Error signing out:', error);
       Alert.alert('Hata', 'Çıkış yapılırken bir sorun oluştu.');
+    } finally {
+      // This part will not be reached if logout is successful, as the component will unmount.
+      // However, it is good practice for safety in case of errors.
+      setLoading(false);
     }
   };
 
@@ -45,20 +50,24 @@ const ProfileScreen = (): React.JSX.Element => {
     <View style={styles.container}>
       <Text style={styles.title}>Profil</Text>
       
-      {/* Display the user's email if they are logged in */}
       {user ? (
         <Text style={styles.emailText}>Giriş Yapılan E-posta: {user.email}</Text>
       ) : (
         <Text style={styles.emailText}>Kullanıcı bilgisi bulunamadı.</Text>
       )}
 
-      {/* Logout Button */}
+      {/* Logout Button and Loading Indicator */}
       <View style={styles.buttonContainer}>
-        <Button
-          title="Çıkış Yap"
-          onPress={handleLogout}
-          color="#e74c3c" // A distinct color for a destructive action.
-        />
+        {loading ? (
+          <ActivityIndicator size="large" color="#e74c3c" />
+        ) : (
+          <Button
+            title="Çıkış Yap"
+            onPress={handleLogout}
+            disabled={loading}
+            color="#e74c3c"
+          />
+        )}
       </View>
     </View>
   );
