@@ -11,18 +11,27 @@
 import React, {useState} from 'react';
 import {View, Text, Button, StyleSheet, Alert, ActivityIndicator} from 'react-native';
 import auth from '@react-native-firebase/auth';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useAuth} from '../context/AuthContext';
+import {RootStackParamList} from '../types/navigation';
+
+type ProfileScreenProps = NativeStackScreenProps<RootStackParamList, 'Profile'>;
 
 /**
  * @name ProfileScreen
  * @description The main component for the user profile screen.
  */
-const ProfileScreen = (): React.JSX.Element => {
+const ProfileScreen = ({navigation}: ProfileScreenProps): React.JSX.Element => {
   console.log('👤✅ ProfileScreen: Component has mounted.');
 
   // --- Hooks ---
   const {user} = useAuth();
   const [loading, setLoading] = useState(false); // State to manage logout loading
+
+  const handleAddBaby = () => {
+    console.log('👤👶 ProfileScreen.handleAddBaby: Navigating to AddBaby screen.');
+    navigation.navigate('AddBaby');
+  };
   
   /**
    * @function handleLogout
@@ -56,18 +65,27 @@ const ProfileScreen = (): React.JSX.Element => {
         <Text style={styles.emailText}>Kullanıcı bilgisi bulunamadı.</Text>
       )}
 
-      {/* Logout Button and Loading Indicator */}
+      {/* Action Buttons */}
       <View style={styles.buttonContainer}>
-        {loading ? (
-          <ActivityIndicator size="large" color="#e74c3c" />
-        ) : (
+        <View style={styles.buttonWrapper}>
           <Button
-            title="Çıkış Yap"
-            onPress={handleLogout}
+            title="Bebek Ekle"
+            onPress={handleAddBaby}
             disabled={loading}
-            color="#e74c3c"
           />
-        )}
+        </View>
+        <View style={styles.buttonWrapper}>
+          {loading ? (
+            <ActivityIndicator size="large" color="#e74c3c" />
+          ) : (
+            <Button
+              title="Çıkış Yap"
+              onPress={handleLogout}
+              disabled={loading}
+              color="#e74c3c"
+            />
+          )}
+        </View>
       </View>
     </View>
   );
@@ -92,7 +110,10 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   buttonContainer: {
-      width: '80%',
+    width: '80%',
+  },
+  buttonWrapper: {
+    marginBottom: 15, // Add space between buttons
   }
 });
 
