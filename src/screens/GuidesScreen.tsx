@@ -65,6 +65,7 @@ type GuidesScreenProps = NativeStackScreenProps<GuidesStackParamList, 'GuidesLis
  * @name GuidesScreen
  * @description The main component for displaying the list of guides.
  * @param {GuidesScreenProps} props - The navigation props.
+ * @returns {React.JSX.Element} A React Element representing the guides list screen.
  */
 const GuidesScreen = ({navigation}: GuidesScreenProps): React.JSX.Element => {
   console.log('📚✅ GuidesScreen: Component has mounted.');

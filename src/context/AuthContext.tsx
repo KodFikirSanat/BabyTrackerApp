@@ -41,9 +41,10 @@ const AuthContext = createContext<AuthContextType>({
  *              It sets up a real-time listener to Firebase Auth.
  * @param {object} props - Component properties.
  * @param {ReactNode} props.children - The child components that will be rendered within this provider.
+ * @returns {React.JSX.Element} The provider component.
  */
 export const AuthProvider = ({children}: {children: ReactNode}): React.JSX.Element => {
-  console.log('📦✅ AuthProvider: Component has mounted.');
+  console.log('🔒✅ AuthProvider: Component has mounted.');
 
   // State to hold the current user object provided by Firebase.
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
@@ -52,20 +53,20 @@ export const AuthProvider = ({children}: {children: ReactNode}): React.JSX.Eleme
 
   // useEffect hook to set up the Firebase authentication listener when the component mounts.
   useEffect(() => {
-    console.log('👂🔥 AuthProvider.useEffect: Setting up Firebase auth listener...');
+    console.log('🔒⏳ AuthProvider: Setting up Firebase auth listener...');
     
     // onAuthStateChanged is a real-time listener from Firebase.
     // It returns an `unsubscribe` function which is crucial for cleanup.
     const subscriber = auth().onAuthStateChanged(userState => {
       // This function is called whenever a user signs in or out.
       console.log(
-        `👤🔄 AuthProvider.onAuthStateChanged: Auth state changed. User is now: ${userState ? userState.email : 'null'}`
+        `🔒✅ AuthProvider: Auth state changed. User is now: ${userState ? userState.email : 'null'}`
       );
       setUser(userState);
 
       // We only want to set loading to false on the very first check.
       if (loading) {
-        console.log('🏁⏳ AuthProvider.onAuthStateChanged: Initial auth check finished.');
+        console.log('🔒✅ AuthProvider: Initial auth check finished.');
         setLoading(false);
       }
     });
@@ -73,7 +74,7 @@ export const AuthProvider = ({children}: {children: ReactNode}): React.JSX.Eleme
     // The cleanup function: When the AuthProvider component is unmounted (e.g., app closes),
     // we must unsubscribe from the listener to prevent memory leaks.
     return () => {
-      console.log('🧹👂 AuthProvider.useEffect: Cleaning up Firebase auth listener.');
+      console.log('🔒🧹 AuthProvider: Cleaning up Firebase auth listener.');
       subscriber();
     };
   }, []); // The empty dependency array [] ensures this effect runs only once on mount.
