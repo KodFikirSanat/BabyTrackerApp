@@ -38,7 +38,7 @@ const Stack = createNativeStackNavigator<GuidesStackParamList>();
  * @returns {React.JSX.Element} The rendered stack navigator.
  */
 const GuidesStackNavigator = (): React.JSX.Element => {
-  console.log('📚🧭 GuidesStackNavigator: Component has mounted.');
+  console.log('🧭✅ GuidesStackNavigator: Component has mounted.');
   return (
     <Stack.Navigator
       // Default options for all screens in this stack.

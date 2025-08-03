@@ -53,9 +53,10 @@ const BabyContext = createContext<BabyContextType | undefined>(undefined);
  *              from Firestore in real-time.
  * @param {object} props - Component properties.
  * @param {ReactNode} props.children - The child components.
+ * @returns {React.JSX.Element} The provider component.
  */
 export const BabyProvider = ({children}: {children: ReactNode}): React.JSX.Element => {
-  console.log('📦👶 BabyProvider: Component has mounted.');
+  console.log('🧸✅ BabyProvider: Component has mounted.');
 
   const {user} = useAuth(); // Get the current user from the AuthContext.
 
@@ -68,7 +69,7 @@ export const BabyProvider = ({children}: {children: ReactNode}): React.JSX.Eleme
   useEffect(() => {
     // If a user is logged in, we fetch their data.
     if (user) {
-      console.log(`👂👶 BabyProvider.useEffect: User detected (${user.uid}). Fetching babies from Firestore...`);
+      console.log(`🧸⏳ BabyProvider: User detected (${user.uid}). Fetching babies from Firestore...`);
       setLoading(true);
 
       // Set up a real-time Firestore listener (onSnapshot).
@@ -82,41 +83,40 @@ export const BabyProvider = ({children}: {children: ReactNode}): React.JSX.Eleme
         .where('userId', '==', user.uid)
         .onSnapshot(
           querySnapshot => {
-            console.log('🔄👶 BabyProvider.onSnapshot: Received update from Firestore.');
             const userBabies: Baby[] = querySnapshot.docs.map(doc => ({
               id: doc.id,
               ...(doc.data() as Omit<Baby, 'id'>),
             }));
 
+            console.log(`🧸✅ BabyProvider: Firestore update received. Found ${userBabies.length} babies.`);
             setBabies(userBabies);
-            console.log(`✅👶 BabyProvider.onSnapshot: Found ${userBabies.length} babies.`);
 
             // Logic to set a default selected baby.
             const isSelectedBabyStillValid = !!selectedBaby && userBabies.some(b => b.id === selectedBaby.id);
             if (!isSelectedBabyStillValid && userBabies.length > 0) {
-              console.log(`👶✨ BabyProvider.onSnapshot: Setting default selected baby to '${userBabies[0].name}'.`);
+              console.log(`🧸➡️ BabyProvider: Setting default selected baby to '${userBabies[0].name}'.`);
               setSelectedBaby(userBabies[0]);
             } else if (userBabies.length === 0) {
-              console.log('👶🚫 BabyProvider.onSnapshot: No babies found, clearing selected baby.');
+              console.log('🧸🎨 BabyProvider: No babies found, clearing selected baby.');
               setSelectedBaby(null);
             }
             
             setLoading(false);
           },
           error => {
-            console.error('🔥👶 BabyProvider.onSnapshot: Error fetching babies:', error);
+            console.error('🧸❌ BabyProvider: Error fetching babies:', error);
             setLoading(false);
           },
         );
 
       // Cleanup function to unsubscribe from the listener when the user logs out or the component unmounts.
       return () => {
-        console.log('🧹👂 BabyProvider.useEffect: Cleaning up Firestore listener for babies.');
+        console.log('🧸🧹 BabyProvider: Cleaning up Firestore listener for babies.');
         subscriber();
       };
     } else {
       // If there is no user (logged out), clear all local baby data.
-      console.log('👤🚫 BabyProvider.useEffect: No user. Clearing all baby data.');
+      console.log('🧸🧹 BabyProvider: No user detected. Clearing all baby data.');
       setBabies([]);
       setSelectedBaby(null);
       setLoading(false); // We are not loading if there's no user.

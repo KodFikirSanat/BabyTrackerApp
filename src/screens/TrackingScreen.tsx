@@ -44,7 +44,15 @@ const typeTranslations: {[key: string]: string} = {
   doctor_visit: 'Doktor Ziyareti',
 };
 
-// Component for the Add/Edit Log Modal
+/**
+ * A modal component for adding or editing a log entry for a baby.
+ * It contains a form that changes dynamically based on the selected log category.
+ * @param {object} props - The component props.
+ * @param {boolean} props.visible - Whether the modal is currently visible.
+ * @param {() => void} props.onClose - Function to call when the modal should be closed.
+ * @param {string} props.babyId - The ID of the baby to which the log will be added.
+ * @returns {React.JSX.Element} The rendered modal component.
+ */
 const AddLogModal = ({ visible, onClose, babyId }: { visible: boolean; onClose: () => void; babyId: string; }) => {
   const [logCategory, setLogCategory] = useState<Category>('development');
   const [logType, setLogType] = useState('weight');
@@ -63,6 +71,11 @@ const AddLogModal = ({ visible, onClose, babyId }: { visible: boolean; onClose: 
     else if (newCategory === 'routine') setLogType('sleep'); // Default for routine
   };
 
+  /**
+   * Handles the validation and saving of the new log entry to Firestore.
+   * It constructs the data object based on the form state and sends it
+   * to the appropriate subcollection.
+   */
   const handleSave = async () => {
     setLoading(true);
     let data: any = {
@@ -92,12 +105,12 @@ const AddLogModal = ({ visible, onClose, babyId }: { visible: boolean; onClose: 
     // Add validation for 'routine' if needed
 
     try {
-      console.log(`📈💾 Saving to babies/${babyId}/${collectionName}:`, data);
+      console.log(`📈➡️ TrackingScreen: Saving log to babies/${babyId}/${collectionName}...`);
       await firestore().collection('babies').doc(babyId).collection(collectionName).add(data);
       Alert.alert('Başarılı', 'Kayıt başarıyla eklendi.');
       onClose(); // Close modal on success
     } catch (error) {
-      console.error('📈❌ Error saving log:', error);
+      console.error('📈❌ TrackingScreen: Error saving log:', error);
       Alert.alert('Hata', 'Kayıt eklenirken bir sorun oluştu.');
     } finally {
       setLoading(false);
@@ -162,7 +175,17 @@ const AddLogModal = ({ visible, onClose, babyId }: { visible: boolean; onClose: 
 };
 
 
+/**
+ * The main screen for tracking a baby's activities and development.
+ * It displays logs categorized by type (Development, Routine, Health)
+ * and allows users to add new entries via a modal.
+ * @returns {React.JSX.Element} The rendered tracking screen component.
+ */
 const TrackingScreen = () => {
+  useEffect(() => {
+    console.log('📈✅ TrackingScreen: Component has mounted.');
+  }, []);
+
   const {selectedBaby} = useBaby();
   const [logs, setLogs] = useState<AnyLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -178,11 +201,13 @@ const TrackingScreen = () => {
       return;
     }
     setLoading(true);
+    console.log(`📈⏳ TrackingScreen: Subscribing to Firestore logs for baby ID: ${selectedBaby.id}`);
     // Corrected: Removed the incorrect Category[] type assertion
     const collections = ['developmentLogs', 'routineLogs', 'healthLogs'];
     const unsubscribers = collections.map(collectionName => {
       return firestore().collection('babies').doc(selectedBaby.id).collection(collectionName).orderBy('createdAt', 'desc')
         .onSnapshot(snapshot => {
+          console.log(`📈✅ TrackingScreen: Received update from ${collectionName}.`);
           const fetchedLogs: AnyLog[] = snapshot.docs.map(doc => ({ id: doc.id, category: collectionName.replace('Logs', '') as Category, ...doc.data() } as AnyLog));
           setLogs(prevLogs => {
             const otherLogs = prevLogs.filter(log => log.category !== collectionName.replace('Logs', ''));
@@ -196,15 +221,25 @@ const TrackingScreen = () => {
           });
           setLoading(false);
         }, error => {
-          console.error(`Error fetching ${collectionName}:`, error);
+          console.error(`📈❌ TrackingScreen: Error fetching ${collectionName}:`, error);
           setLoading(false);
         });
     });
-    return () => unsubscribers.forEach(unsub => unsub());
+    return () => {
+      console.log(`📈🧹 TrackingScreen: Unsubscribing from Firestore listeners.`);
+      unsubscribers.forEach(unsub => unsub());
+    };
   }, [selectedBaby, isFocused]);
 
   const filteredLogs = useMemo(() => logs.filter(log => log.category === activeCategory), [logs, activeCategory]);
 
+  /**
+   * Renders a single log item in the FlatList.
+   * It formats the log data based on its category and type.
+   * @param {object} props - The props object from FlatList.
+   * @param {AnyLog} props.item - The log item to render.
+   * @returns {React.JSX.Element} The rendered list item.
+   */
   const renderLogItem = ({item}: {item: AnyLog}) => {
     const renderContent = () => {
       switch (item.category) {
@@ -235,6 +270,10 @@ const TrackingScreen = () => {
     );
   };
 
+  /**
+   * Renders the category selection tabs (Development, Routine, Health).
+   * @returns {React.JSX.Element} The rendered tab container.
+   */
   const CategoryTabs = () => (
     <View style={styles.tabContainer}>
       {(['development', 'routine', 'health'] as Category[]).map(cat => (

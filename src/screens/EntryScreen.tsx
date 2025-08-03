@@ -28,6 +28,7 @@ type EntryScreenProps = NativeStackScreenProps<RootStackParamList, 'Entry'>;
  * @name EntryScreen
  * @description The main component for the entry screen.
  * @param {EntryScreenProps} props - The navigation props.
+ * @returns {React.JSX.Element} A React Element representing the entry screen.
  */
 const EntryScreen = ({navigation}: EntryScreenProps): React.JSX.Element => {
   console.log('🚪✅ EntryScreen: Component has mounted.');
@@ -50,7 +51,7 @@ const EntryScreen = ({navigation}: EntryScreenProps): React.JSX.Element => {
       return;
     }
     
-    console.log(`🚪➕ EntryScreen.handleSignUp: Attempting to sign up with email: ${email}`);
+    console.log(`🚪➡️ EntryScreen.handleSignUp: Attempting to sign up with email: ${email}`);
     setLoading(true);
 
     try {
@@ -60,7 +61,7 @@ const EntryScreen = ({navigation}: EntryScreenProps): React.JSX.Element => {
       // After successful sign-up, the onAuthStateChanged listener in AuthContext
       // will handle navigation automatically. We don't need to navigate here.
     } catch (error: any) {
-      console.error('🔥🚪 EntryScreen.handleSignUp: Error during sign-up:', error);
+      console.error('🚪❌ EntryScreen.handleSignUp: Error during sign-up:', error);
       // Provide user-friendly error messages based on the Firebase error code.
       if (error.code === 'auth/email-already-in-use') {
         Alert.alert('Kayıt Başarısız', 'Bu e-posta adresi zaten kullanılıyor.');
@@ -95,7 +96,7 @@ const EntryScreen = ({navigation}: EntryScreenProps): React.JSX.Element => {
       console.log('🚪✅ EntryScreen.handleLogin: User signed in successfully.');
       // Similar to sign-up, onAuthStateChanged in AuthContext will handle navigation.
     } catch (error: any) {
-      console.error('🔥🚪 EntryScreen.handleLogin: Error during login:', error);
+      console.error('🚪❌ EntryScreen.handleLogin: Error during login:', error);
       if (
         error.code === 'auth/user-not-found' ||
         error.code === 'auth/wrong-password' ||

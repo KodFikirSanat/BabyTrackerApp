@@ -34,6 +34,7 @@ type HomeScreenProps = CompositeScreenProps<
  * @name HomeScreen
  * @description The main component for the home screen.
  * @param {HomeScreenProps} props - The navigation props passed down from the navigator.
+ * @returns {React.JSX.Element} A React Element representing the home screen.
  */
 const HomeScreen = ({navigation}: HomeScreenProps): React.JSX.Element => {
   console.log('🏠✅ HomeScreen: Component has mounted.');
@@ -42,7 +43,7 @@ const HomeScreen = ({navigation}: HomeScreenProps): React.JSX.Element => {
   // Subscribing to the BabyContext to get the list of babies, the selected baby, and loading status.
   const {babies, selectedBaby, loading} = useBaby();
   
-  console.log(`🏠📊 HomeScreen: State update. Loading: ${loading}, Selected Baby: ${selectedBaby?.name || 'none'}, Total Babies: ${babies.length}`);
+  console.log(`🏠🎨 HomeScreen: State update. Loading: ${loading}, Selected Baby: ${selectedBaby?.name || 'none'}, Total Babies: ${babies.length}`);
 
   // --- Conditional Rendering ---
   // While the baby data is being fetched, display a loading indicator.
@@ -59,7 +60,7 @@ const HomeScreen = ({navigation}: HomeScreenProps): React.JSX.Element => {
   // If there is no selected baby (which also implies no babies exist for the user),
   // render a welcome message and a button to add a new baby.
   if (!selectedBaby) {
-    console.log('🏠👶 HomeScreen: No selected baby. Prompting user to add one.');
+    console.log('🏠🎨 HomeScreen: Rendering prompt for user to add a baby.');
     return (
       <View style={styles.centered}>
         <Text style={styles.title}>Hoş Geldiniz!</Text>
@@ -79,7 +80,7 @@ const HomeScreen = ({navigation}: HomeScreenProps): React.JSX.Element => {
   }
 
   // If a baby is selected, render the main dashboard view.
-  console.log(`🏠👍 HomeScreen: Displaying dashboard for baby: ${selectedBaby.name}.`);
+  console.log(`🏠✅ HomeScreen: Displaying dashboard for baby: ${selectedBaby.name}.`);
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Ana Sayfa</Text>

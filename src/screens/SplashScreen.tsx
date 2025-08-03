@@ -16,9 +16,10 @@ import {View, Text, ActivityIndicator, StyleSheet} from 'react-native';
  * @name SplashScreen
  * @description A simple, stateless component that shows a loading indicator
  *              and a message to the user.
+ * @returns {React.JSX.Element} A React Element representing the splash screen.
  */
 const SplashScreen = (): React.JSX.Element => {
-  console.log('💧✅ SplashScreen: Component has mounted.');
+  console.log('⏳✅ SplashScreen: Component has mounted.');
 
   return (
     <View style={styles.container}>

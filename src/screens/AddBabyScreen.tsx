@@ -23,9 +23,10 @@ import {RootStackParamList} from '../types/navigation';
 /**
  * @name AddBabyScreen
  * @description The main component for the "Add Baby" screen.
+ * @returns {React.JSX.Element} A React Element representing the add baby screen.
  */
 const AddBabyScreen = (): React.JSX.Element => {
-  console.log('👶➕ AddBabyScreen: Component has mounted.');
+  console.log('👶✅ AddBabyScreen: Component has mounted.');
   
   // --- Hooks ---
   const {user} = useAuth(); // Get the currently authenticated user.
@@ -44,7 +45,7 @@ const AddBabyScreen = (): React.JSX.Element => {
    *              document in the 'babies' collection in Firestore.
    */
   const handleAddBaby = async () => {
-    console.log("👶💾 AddBabyScreen.handleAddBaby: Attempting to add baby...");
+    console.log("👶➡️ AddBabyScreen.handleAddBaby: Attempting to add baby...");
     
     // --- Input Validation ---
     if (!name.trim()) {
@@ -57,7 +58,7 @@ const AddBabyScreen = (): React.JSX.Element => {
     }
     if (!user) {
       Alert.alert('Hata', 'Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.');
-      console.error('🔥👶 AddBabyScreen.handleAddBaby: Cannot add baby, user is not authenticated.');
+      console.error('👶❌ AddBabyScreen.handleAddBaby: Cannot add baby, user is not authenticated.');
       return;
     }
     
@@ -73,7 +74,7 @@ const AddBabyScreen = (): React.JSX.Element => {
         createdAt: firestore.FieldValue.serverTimestamp(),
       };
       
-      console.log('👶 Firestore: Saving new baby data...', babyData);
+      console.log('👶➡️ AddBabyScreen: Saving new baby data to Firestore.');
       // Add the new document to the 'babies' collection.
       await firestore().collection('babies').add(babyData);
       
@@ -84,7 +85,7 @@ const AddBabyScreen = (): React.JSX.Element => {
       navigation.navigate('MainTabs', { screen: 'Home' });
 
     } catch (error) {
-      console.error('🔥👶 AddBabyScreen.handleAddBaby: Error creating baby profile:', error);
+      console.error('👶❌ AddBabyScreen.handleAddBaby: Error creating baby profile:', error);
       Alert.alert('Hata', 'Profil oluşturulurken bir sorun oluştu.');
       setLoading(false);
     }

@@ -18,7 +18,7 @@ export const sendVaccinationReminders = onSchedule(
     timeZone: "Europe/Istanbul",
   },
   async () => {
-    logger.info("Running vaccination reminder check...");
+    logger.info("☁️⏳[Job Start] Running vaccination reminder check...");
 
     const now = new Date();
     const startOfTomorrow = new Date(
@@ -53,12 +53,12 @@ export const sendVaccinationReminders = onSchedule(
         .get();
 
       if (healthLogsSnapshot.empty) {
-        logger.info("No upcoming vaccinations found for tomorrow.");
+        logger.info("☁️✅[Job End] No upcoming vaccinations found for tomorrow.");
         return;
       }
 
       logger.info(
-        `Found ${healthLogsSnapshot.docs.length} upcoming vaccinations.`,
+        `☁️✅ Found ${healthLogsSnapshot.docs.length} upcoming vaccinations to process.`,
       );
 
       // 2. Process each vaccination log
@@ -67,19 +67,19 @@ export const sendVaccinationReminders = onSchedule(
         const babyDocRef = doc.ref.parent.parent;
 
         if (!babyDocRef) {
-          logger.warn("Could not find parent baby document for log:", doc.id);
+          logger.warn("☁️⚠️ Could not find parent baby document for log:", doc.id);
           continue;
         }
 
         const babySnapshot = await babyDocRef.get();
         if (!babySnapshot.exists) {
-          logger.warn("Baby document not found for log:", doc.id);
+          logger.warn("☁️⚠️ Baby document not found for log:", doc.id);
           continue;
         }
 
         const babyData = babySnapshot.data();
         if (!babyData || !babyData.userId) {
-          logger.warn("Missing userId on baby document:", babyDocRef.id);
+          logger.warn("☁️⚠️ Missing userId on baby document:", babyDocRef.id);
           continue;
         }
         const userId = babyData.userId;
@@ -87,13 +87,13 @@ export const sendVaccinationReminders = onSchedule(
         // 3. Get the user's FCM token
         const userDoc = await db.collection("users").doc(userId).get();
         if (!userDoc.exists) {
-          logger.warn("User document not found:", userId);
+          logger.warn("☁️⚠️ User document not found:", userId);
           continue;
         }
 
         const userData = userDoc.data();
         if (!userData || !userData.fcmToken) {
-          logger.warn(`User ${userId} does not have an FCM token.`);
+          logger.warn(`☁️⚠️ User ${userId} does not have an FCM token.`);
           continue;
         }
         const fcmToken = userData.fcmToken;
@@ -110,13 +110,13 @@ export const sendVaccinationReminders = onSchedule(
         };
 
         logger.info(
-          `Sending notification to user ${userId} for baby ${babyData.name}`,
+          `☁️➡️ Sending notification to user ${userId} for baby ${babyData.name}`,
         );
 
         await admin.messaging().send(payload);
       }
     } catch (error) {
-      logger.error("Error sending vaccination reminders:", error);
+      logger.error("☁️❌ Error sending vaccination reminders:", error);
     }
   },
 );
