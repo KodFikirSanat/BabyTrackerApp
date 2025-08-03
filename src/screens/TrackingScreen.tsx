@@ -33,6 +33,17 @@ type HealthLog = { id: string; category: 'health'; type: 'vaccination' | 'doctor
 type AnyLog = DevelopmentLog | RoutineLog | HealthLog;
 type Category = 'development' | 'routine' | 'health';
 
+// Helper for translating log types
+const typeTranslations: {[key: string]: string} = {
+  weight: 'Kilo',
+  height: 'Boy',
+  sleep: 'Uyku',
+  feeding: 'Beslenme',
+  diaper: 'Bez',
+  vaccination: 'Aşı',
+  doctor_visit: 'Doktor Ziyareti',
+};
+
 // Component for the Add/Edit Log Modal
 const AddLogModal = ({ visible, onClose, babyId }: { visible: boolean; onClose: () => void; babyId: string; }) => {
   const [logCategory, setLogCategory] = useState<Category>('development');
@@ -43,6 +54,14 @@ const AddLogModal = ({ visible, onClose, babyId }: { visible: boolean; onClose: 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // JULES: Resets the log type when the category changes to prevent stale data.
+  const handleCategoryChange = (newCategory: Category) => {
+    setLogCategory(newCategory);
+    if (newCategory === 'development') setLogType('weight');
+    else if (newCategory === 'health') setLogType('vaccination');
+    else if (newCategory === 'routine') setLogType('sleep'); // Default for routine
+  };
 
   const handleSave = async () => {
     setLoading(true);
@@ -91,7 +110,7 @@ const AddLogModal = ({ visible, onClose, babyId }: { visible: boolean; onClose: 
         <Text style={styles.modalLabel}>Kategori</Text>
         <View style={styles.tabContainer}>
          {(['development', 'routine', 'health'] as Category[]).map(cat => (
-            <TouchableOpacity key={cat} style={[styles.tab, logCategory === cat && styles.tabActive]} onPress={() => setLogCategory(cat)}>
+            <TouchableOpacity key={cat} style={[styles.tab, logCategory === cat && styles.tabActive]} onPress={() => handleCategoryChange(cat)}>
               <Text>{cat.charAt(0).toUpperCase() + cat.slice(1)}</Text>
             </TouchableOpacity>
           ))}
@@ -192,7 +211,11 @@ const TrackingScreen = () => {
         case 'development':
           return <Text style={styles.logValue}>{`${item.value} ${item.type === 'weight' ? 'kg' : 'cm'}`}</Text>;
         case 'routine':
-          return <Text style={styles.logValue}>{`Süre: ${item.durationInMinutes} dk`}</Text>;
+          // JULES: Added check for durationInMinutes to prevent "undefined dk"
+          if (typeof item.durationInMinutes === 'number') {
+            return <Text style={styles.logValue}>{`Süre: ${item.durationInMinutes} dk`}</Text>;
+          }
+          return null; // Don't render anything if duration is not available
         case 'health':
           return <Text style={styles.logValue}>{item.eventName}</Text>;
         default:
@@ -202,8 +225,11 @@ const TrackingScreen = () => {
 
     return (
       <View style={styles.logItem}>
-        <Text style={styles.logType}>{item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Text>
-        {renderContent()}
+        <View style={{flex: 1}}>
+          <Text style={styles.logType}>{typeTranslations[item.type] || item.type}</Text>
+          {item.notes ? <Text style={styles.logNotes}>{item.notes}</Text> : null}
+        </View>
+        <View style={{flex: 1.5, alignItems: 'center'}}>{renderContent()}</View>
         <Text style={styles.logDate}>{item.createdAt?.toDate().toLocaleDateString()}</Text>
       </View>
     );
@@ -249,7 +275,8 @@ const styles = StyleSheet.create({
   tabActive: { backgroundColor: '#e5d4f1' },
   tabText: { fontWeight: 'bold' },
   logItem: { backgroundColor: '#fff', padding: 15, marginVertical: 8, marginHorizontal: 16, borderRadius: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 1.41 },
-  logType: { fontSize: 16, fontWeight: 'bold', flex: 1 },
+  logType: { fontSize: 16, fontWeight: 'bold' },
+  logNotes: { fontSize: 12, color: 'gray', fontStyle: 'italic', marginTop: 4 },
   logValue: { fontSize: 14, color: '#333', flex: 1.5, textAlign: 'center' },
   logDate: { fontSize: 12, color: 'gray', flex: 1, textAlign: 'right' },
   // FAB styles
