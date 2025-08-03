@@ -73,10 +73,13 @@ export const BabyProvider = ({children}: {children: ReactNode}): React.JSX.Eleme
 
       // Set up a real-time Firestore listener (onSnapshot).
       // This listener will automatically update when the data changes in the database.
+      // JULES: The .orderBy('createdAt') clause was removed to prevent a crash.
+      // The app was failing because this query requires a composite index in Firestore.
+      // The correct long-term fix is to create this index. The link can be found in the original error logs.
+      // This change ensures the app remains functional, though babies may not be sorted chronologically.
       const subscriber = firestore()
         .collection('babies')
         .where('userId', '==', user.uid)
-        .orderBy('createdAt', 'asc')
         .onSnapshot(
           querySnapshot => {
             console.log('🔄👶 BabyProvider.onSnapshot: Received update from Firestore.');
