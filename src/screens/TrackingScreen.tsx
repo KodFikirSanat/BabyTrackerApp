@@ -2,6 +2,7 @@
 
 /**
  * @file Defines the TrackingScreen, for logging and viewing a baby's activities.
+ * It includes a baby selector to switch between different baby profiles.
  *
  * @format
  */
@@ -20,17 +21,27 @@ import {
   ScrollView,
   Alert,
   Platform,
+  Pressable, // NEW: For the baby selector modal
 } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
-import {useBaby} from '../context/BabyContext';
+import {useBaby, Baby} from '../context/BabyContext';
 import {useIsFocused, useRoute, RouteProp} from '@react-navigation/native';
 import DateTimePicker, {
   DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
 import {AnyLog, Category} from '../types/log';
 import {MainTabParamList} from '../types/navigation';
+import {Svg, Path} from 'react-native-svg'; // NEW: For the dropdown icon
 
-// Helper for translating log types
+// --- Helper Components & Constants ---
+
+// NEW: A simple chevron down icon for the baby selector
+const DropdownIcon = () => (
+  <Svg width="20" height="20" viewBox="0 0 24 24">
+    <Path d="M7 10l5 5 5-5z" fill="#6b9ac4" />
+  </Svg>
+);
+
 const typeTranslations: {[key: string]: string} = {
   weight: 'Kilo',
   height: 'Boy',
@@ -41,16 +52,18 @@ const typeTranslations: {[key: string]: string} = {
   doctor_visit: 'Doktor Ziyareti',
 };
 
-/**
- * A modal component for adding or editing a log entry for a baby.
- * It contains a form that changes dynamically based on the selected log category.
- * @param {object} props - The component props.
- * @param {boolean} props.visible - Whether the modal is currently visible.
- * @param {() => void} props.onClose - Function to call when the modal should be closed.
- * @param {string} props.babyId - The ID of the baby to which the log will be added.
- * @returns {React.JSX.Element} The rendered modal component.
- */
-const AddLogModal = ({ visible, onClose, babyId }: { visible: boolean; onClose: () => void; babyId: string; }) => {
+// --- Main Components ---
+
+const AddLogModal = ({
+  visible,
+  onClose,
+  babyId,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  babyId: string;
+}) => {
+  // ... (This component's code remains unchanged from the original file)
   const [logCategory, setLogCategory] = useState<Category>('development');
   const [logType, setLogType] = useState('weight');
   const [logValue, setLogValue] = useState('');
@@ -60,19 +73,13 @@ const AddLogModal = ({ visible, onClose, babyId }: { visible: boolean; onClose: 
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // JULES: Resets the log type when the category changes to prevent stale data.
   const handleCategoryChange = (newCategory: Category) => {
     setLogCategory(newCategory);
     if (newCategory === 'development') setLogType('weight');
     else if (newCategory === 'health') setLogType('vaccination');
-    else if (newCategory === 'routine') setLogType('sleep'); // Default for routine
+    else if (newCategory === 'routine') setLogType('sleep');
   };
 
-  /**
-   * Handles the validation and saving of the new log entry to Firestore.
-   * It constructs the data object based on the form state and sends it
-   * to the appropriate subcollection.
-   */
   const handleSave = async () => {
     setLoading(true);
     let data: any = {
@@ -82,7 +89,6 @@ const AddLogModal = ({ visible, onClose, babyId }: { visible: boolean; onClose: 
     };
     let collectionName = `${logCategory}Logs`;
 
-    // --- Data Validation and Preparation ---
     if (logCategory === 'development') {
       if (!logValue) {
         Alert.alert('Hata', 'Lütfen bir değer girin (kg veya cm).');
@@ -99,21 +105,20 @@ const AddLogModal = ({ visible, onClose, babyId }: { visible: boolean; onClose: 
       data.eventName = logEventName;
       data.eventDate = firestore.Timestamp.fromDate(logDate);
     }
-    // Add validation for 'routine' if needed
 
     try {
-      console.log(`📈➡️ TrackingScreen: Saving log to babies/${babyId}/${collectionName}...`);
+      console.log(`📈➡️ Saving log to babies/${babyId}/${collectionName}...`);
       await firestore().collection('babies').doc(babyId).collection(collectionName).add(data);
       Alert.alert('Başarılı', 'Kayıt başarıyla eklendi.');
-      onClose(); // Close modal on success
+      onClose();
     } catch (error) {
-      console.error('📈❌ TrackingScreen: Error saving log:', error);
+      console.error('📈❌ Error saving log:', error);
       Alert.alert('Hata', 'Kayıt eklenirken bir sorun oluştu.');
     } finally {
       setLoading(false);
     }
   };
-  
+
   const renderForm = () => {
     return (
       <View>
@@ -171,88 +176,104 @@ const AddLogModal = ({ visible, onClose, babyId }: { visible: boolean; onClose: 
   );
 };
 
-
-/**
- * The main screen for tracking a baby's activities and development.
- * It displays logs categorized by type (Development, Routine, Health)
- * and allows users to add new entries via a modal.
- * @returns {React.JSX.Element} The rendered tracking screen component.
- */
 type TrackingScreenRouteProp = RouteProp<MainTabParamList, 'Tracking'>;
 
 const TrackingScreen = () => {
-  useEffect(() => {
-    console.log('📈✅ TrackingScreen: Component has mounted.');
-  }, []);
-
-  const {selectedBaby} = useBaby();
+  const {babies, selectedBaby: globalSelectedBaby} = useBaby();
   const route = useRoute<TrackingScreenRouteProp>();
+  const isFocused = useIsFocused();
+
+  // NEW: Local state to manage the baby currently being viewed on this screen
+  const [currentBaby, setCurrentBaby] = useState<Baby | null>(null);
+  const [isBabySelectorVisible, setBabySelectorVisible] = useState(false);
+
   const [logs, setLogs] = useState<AnyLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<Category>(
     route.params?.initialCategory || 'development',
   );
-  const [modalVisible, setModalVisible] = useState(false); // State for modal
-  const isFocused = useIsFocused();
+  const [modalVisible, setModalVisible] = useState(false);
 
+  // NEW: Effect to set the initial baby for the screen.
+  // It prioritizes the navigation parameter, then the global context, then the first baby in the list.
   useEffect(() => {
-    // Firestore listener logic (from previous step)
-    if (!selectedBaby || !isFocused) {
-      if (!selectedBaby) setLoading(false);
+    const babyIdFromParams = route.params?.babyId;
+    if (babyIdFromParams) {
+      const foundBaby = babies.find(b => b.id === babyIdFromParams);
+      setCurrentBaby(foundBaby || null);
+    } else if (globalSelectedBaby) {
+      setCurrentBaby(globalSelectedBaby);
+    } else if (babies.length > 0) {
+      setCurrentBaby(babies[0]);
+    } else {
+      setCurrentBaby(null);
+    }
+  }, [route.params, babies, globalSelectedBaby]);
+
+  // NEW: Effect to fetch logs when the locally selected baby changes.
+  useEffect(() => {
+    if (!currentBaby || !isFocused) {
+      if (!currentBaby) setLoading(false);
       setLogs([]);
       return;
     }
     setLoading(true);
-    console.log(`📈⏳ TrackingScreen: Subscribing to Firestore logs for baby ID: ${selectedBaby.id}`);
-    // Corrected: Removed the incorrect Category[] type assertion
+    console.log(`📈⏳ Subscribing to logs for local baby ID: ${currentBaby.id}`);
     const collections = ['developmentLogs', 'routineLogs', 'healthLogs'];
     const unsubscribers = collections.map(collectionName => {
-      return firestore().collection('babies').doc(selectedBaby.id).collection(collectionName).orderBy('createdAt', 'desc')
-        .onSnapshot(snapshot => {
-          console.log(`📈✅ TrackingScreen: Received update from ${collectionName}.`);
-          const fetchedLogs: AnyLog[] = snapshot.docs.map(doc => ({ id: doc.id, category: collectionName.replace('Logs', '') as Category, ...doc.data() } as AnyLog));
-          setLogs(prevLogs => {
-            const otherLogs = prevLogs.filter(log => log.category !== collectionName.replace('Logs', ''));
-            // JULES: Added null-safe sorting to prevent crashes from pending server timestamps.
-            // When a new log is created, `createdAt` can be temporarily null in the local snapshot.
-            return [...otherLogs, ...fetchedLogs].sort((a, b) => {
-              const timeA = a.createdAt?.toMillis() || 0;
-              const timeB = b.createdAt?.toMillis() || 0;
-              return timeB - timeA;
+      return firestore()
+        .collection('babies')
+        .doc(currentBaby.id)
+        .collection(collectionName)
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(
+          snapshot => {
+            console.log(`📈✅ Received update from ${collectionName}.`);
+            const fetchedLogs: AnyLog[] = snapshot.docs.map(doc => ({
+              id: doc.id,
+              category: collectionName.replace('Logs', '') as Category,
+              ...doc.data(),
+            } as AnyLog));
+            setLogs(prevLogs => {
+              const otherLogs = prevLogs.filter(
+                log => log.category !== collectionName.replace('Logs', ''),
+              );
+              return [...otherLogs, ...fetchedLogs].sort((a, b) => {
+                const timeA = a.createdAt?.toMillis() || 0;
+                const timeB = b.createdAt?.toMillis() || 0;
+                return timeB - timeA;
+              });
             });
-          });
-          setLoading(false);
-        }, error => {
-          console.error(`📈❌ TrackingScreen: Error fetching ${collectionName}:`, error);
-          setLoading(false);
-        });
+            setLoading(false);
+          },
+          error => {
+            console.error(`📈❌ Error fetching ${collectionName}:`, error);
+            setLoading(false);
+          },
+        );
     });
     return () => {
-      console.log(`📈🧹 TrackingScreen: Unsubscribing from Firestore listeners.`);
+      console.log(`📈🧹 Unsubscribing from Firestore listeners.`);
       unsubscribers.forEach(unsub => unsub());
     };
-  }, [selectedBaby, isFocused]);
+  }, [currentBaby, isFocused]);
 
-  const filteredLogs = useMemo(() => logs.filter(log => log.category === activeCategory), [logs, activeCategory]);
+  const filteredLogs = useMemo(
+    () => logs.filter(log => log.category === activeCategory),
+    [logs, activeCategory],
+  );
 
-  /**
-   * Renders a single log item in the FlatList.
-   * It formats the log data based on its category and type.
-   * @param {object} props - The props object from FlatList.
-   * @param {AnyLog} props.item - The log item to render.
-   * @returns {React.JSX.Element} The rendered list item.
-   */
   const renderLogItem = ({item}: {item: AnyLog}) => {
+    // ... (This function's code remains unchanged)
     const renderContent = () => {
       switch (item.category) {
         case 'development':
           return <Text style={styles.logValue}>{`${item.value} ${item.type === 'weight' ? 'kg' : 'cm'}`}</Text>;
         case 'routine':
-          // JULES: Added check for durationInMinutes to prevent "undefined dk"
           if (typeof item.durationInMinutes === 'number') {
             return <Text style={styles.logValue}>{`Süre: ${item.durationInMinutes} dk`}</Text>;
           }
-          return null; // Don't render anything if duration is not available
+          return null;
         case 'health':
           return <Text style={styles.logValue}>{item.eventName}</Text>;
         default:
@@ -272,32 +293,89 @@ const TrackingScreen = () => {
     );
   };
 
-  /**
-   * Renders the category selection tabs (Development, Routine, Health).
-   * @returns {React.JSX.Element} The rendered tab container.
-   */
   const CategoryTabs = () => (
     <View style={styles.tabContainer}>
       {(['development', 'routine', 'health'] as Category[]).map(cat => (
-        <TouchableOpacity key={cat} style={[styles.tab, activeCategory === cat && styles.tabActive]} onPress={() => setActiveCategory(cat)}>
-          <Text style={styles.tabText}>{cat === 'development' ? 'Gelişim' : (cat === 'routine' ? 'Rutin' : 'Sağlık')}</Text>
+        <TouchableOpacity
+          key={cat}
+          style={[styles.tab, activeCategory === cat && styles.tabActive]}
+          onPress={() => setActiveCategory(cat)}>
+          <Text style={styles.tabText}>
+            {cat === 'development' ? 'Gelişim' : cat === 'routine' ? 'Rutin' : 'Sağlık'}
+          </Text>
         </TouchableOpacity>
       ))}
     </View>
   );
 
-  if (!selectedBaby) return <View style={styles.centered}><Text>Lütfen bir bebek seçin veya ekleyin.</Text></View>;
-  if (loading && logs.length === 0) return <View style={styles.centered}><ActivityIndicator size="large" color="#e5d4f1" /><Text>Kayıtlar yükleniyor...</Text></View>;
+  // NEW: Baby Selector Modal
+  const BabySelectorModal = () => (
+    <Modal
+      transparent={true}
+      visible={isBabySelectorVisible}
+      onRequestClose={() => setBabySelectorVisible(false)}
+      animationType="fade">
+      <Pressable style={styles.modalOverlay} onPress={() => setBabySelectorVisible(false)}>
+        <View style={styles.selectorMenu}>
+          {babies.map(baby => (
+            <TouchableOpacity
+              key={baby.id}
+              style={styles.selectorItem}
+              onPress={() => {
+                setCurrentBaby(baby);
+                setBabySelectorVisible(false);
+              }}>
+              <Text style={styles.selectorText}>{baby.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </Pressable>
+    </Modal>
+  );
+
+  if (!currentBaby) {
+    return (
+      <View style={styles.centered}>
+        <Text>Lütfen bir bebek seçin veya ekleyin.</Text>
+      </View>
+    );
+  }
+
+  if (loading && logs.length === 0) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#e5d4f1" />
+        <Text>Kayıtlar yükleniyor...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {selectedBaby && <AddLogModal visible={modalVisible} onClose={() => setModalVisible(false)} babyId={selectedBaby.id} />}
-      <Text style={styles.header}>Takip Kayıtları: {selectedBaby.name}</Text>
+      {currentBaby && (
+        <AddLogModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          babyId={currentBaby.id}
+        />
+      )}
+      <BabySelectorModal />
+
+      {/* NEW: Pressable Header to open baby selector */}
+      <TouchableOpacity
+        style={styles.headerContainer}
+        onPress={() => setBabySelectorVisible(true)}>
+        <Text style={styles.header}>{currentBaby.name} Bilgileri: </Text>
+        <DropdownIcon />
+      </TouchableOpacity>
+      
       <CategoryTabs />
       {filteredLogs.length > 0 ? (
         <FlatList data={filteredLogs} renderItem={renderLogItem} keyExtractor={item => item.id} />
       ) : (
-        <View style={styles.centered}><Text>Bu kategori için henüz kayıt yok.</Text></View>
+        <View style={styles.centered}>
+          <Text>Bu kategori için henüz kayıt yok.</Text>
+        </View>
       )}
       <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
         <Text style={styles.fabIcon}>+</Text>
@@ -307,28 +385,57 @@ const TrackingScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  // Container, Centered, Header, Tabs...
-  container: { flex: 1, backgroundColor: '#f8f9fa' },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  header: { fontSize: 22, fontWeight: 'bold', padding: 20, textAlign: 'center' },
-  tabContainer: { flexDirection: 'row', justifyContent: 'space-around', backgroundColor: '#fff', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#eee' },
-  tab: { padding: 10, borderRadius: 5 },
-  tabActive: { backgroundColor: '#e5d4f1' },
-  tabText: { fontWeight: 'bold' },
-  logItem: { backgroundColor: '#fff', padding: 15, marginVertical: 8, marginHorizontal: 16, borderRadius: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 1.41 },
-  logType: { fontSize: 16, fontWeight: 'bold' },
-  logNotes: { fontSize: 12, color: 'gray', fontStyle: 'italic', marginTop: 4 },
-  logValue: { fontSize: 14, color: '#333', flex: 1.5, textAlign: 'center' },
-  logDate: { fontSize: 12, color: 'gray', flex: 1, textAlign: 'right' },
-  // FAB styles
-  fab: { position: 'absolute', width: 56, height: 56, alignItems: 'center', justifyContent: 'center', right: 20, bottom: 20, backgroundColor: '#6b9ac4', borderRadius: 28, elevation: 8 },
-  fabIcon: { fontSize: 24, color: 'white' },
-  // Modal styles
-  modalContainer: { flex: 1, paddingTop: 40, paddingHorizontal: 20 },
-  modalTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  modalLabel: { fontSize: 16, fontWeight: 'bold', marginTop: 15, marginBottom: 5},
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, borderRadius: 5, marginBottom: 15, fontSize: 16 },
-  modalButtonContainer: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 30, marginBottom: 50 },
+  // --- Existing styles are preserved ---
+  container: {flex: 1, backgroundColor: '#f8f9fa'},
+  centered: {flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20},
+  header: {fontSize: 22, fontWeight: 'bold', paddingVertical: 20, paddingHorizontal: 10},
+  tabContainer: {flexDirection: 'row', justifyContent: 'space-around', backgroundColor: '#fff', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#eee'},
+  tab: {padding: 10, borderRadius: 5},
+  tabActive: {backgroundColor: '#e5d4f1'},
+  tabText: {fontWeight: 'bold'},
+  logItem: {backgroundColor: '#fff', padding: 15, marginVertical: 8, marginHorizontal: 16, borderRadius: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOffset: {width: 0, height: 1}, shadowOpacity: 0.2, shadowRadius: 1.41},
+  logType: {fontSize: 16, fontWeight: 'bold'},
+  logNotes: {fontSize: 12, color: 'gray', fontStyle: 'italic', marginTop: 4},
+  logValue: {fontSize: 14, color: '#333', flex: 1.5, textAlign: 'center'},
+  logDate: {fontSize: 12, color: 'gray', flex: 1, textAlign: 'right'},
+  fab: {position: 'absolute', width: 56, height: 56, alignItems: 'center', justifyContent: 'center', right: 20, bottom: 20, backgroundColor: '#6b9ac4', borderRadius: 28, elevation: 8},
+  fabIcon: {fontSize: 24, color: 'white'},
+  modalContainer: {flex: 1, paddingTop: 40, paddingHorizontal: 20},
+  modalTitle: {fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center'},
+  modalLabel: {fontSize: 16, fontWeight: 'bold', marginTop: 15, marginBottom: 5},
+  input: {borderWidth: 1, borderColor: '#ccc', padding: 10, borderRadius: 5, marginBottom: 15, fontSize: 16},
+  modalButtonContainer: {flexDirection: 'row', justifyContent: 'space-around', marginTop: 30, marginBottom: 50},
+  
+  // --- NEW styles for Baby Selector ---
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 10, // Adjusted padding
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  selectorMenu: {
+    marginTop: 100, // Position it below the header area
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 10,
+    elevation: 5,
+  },
+  selectorItem: {
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  selectorText: {
+    textAlign: 'center',
+    fontSize: 18,
+  },
 });
 
 export default TrackingScreen;

@@ -17,7 +17,7 @@ import {Category} from './log';
  */
 export type MainTabParamList = {
   Home: undefined;
-  Tracking: {initialCategory: Category} | undefined;
+  Tracking: {babyId?: string; initialCategory: Category} | undefined;
   AI: undefined;
   Guides: undefined;
   Profile: undefined;
