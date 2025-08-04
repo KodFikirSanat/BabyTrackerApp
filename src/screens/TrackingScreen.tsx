@@ -21,17 +21,14 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
+import firestore from '@react-native-firebase/firestore';
 import {useBaby} from '../context/BabyContext';
-import {useIsFocused} from '@react-navigation/native';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-
-// Type definitions with corrected Timestamp type
-type DevelopmentLog = { id: string; category: 'development'; type: 'weight' | 'height'; value: number; createdAt: FirebaseFirestoreTypes.Timestamp; };
-type RoutineLog = { id: string; category: 'routine'; type: 'sleep' | 'feeding' | 'diaper'; startTime?: FirebaseFirestoreTypes.Timestamp; endTime?: FirebaseFirestoreTypes.Timestamp; durationInMinutes?: number; notes?: string; createdAt: FirebaseFirestoreTypes.Timestamp; };
-type HealthLog = { id: string; category: 'health'; type: 'vaccination' | 'doctor_visit'; eventName: string; eventDate: FirebaseFirestoreTypes.Timestamp; notes?: string; createdAt: FirebaseFirestoreTypes.Timestamp; };
-type AnyLog = DevelopmentLog | RoutineLog | HealthLog;
-type Category = 'development' | 'routine' | 'health';
+import {useIsFocused, useRoute, RouteProp} from '@react-navigation/native';
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
+import {AnyLog, Category} from '../types/log';
+import {MainTabParamList} from '../types/navigation';
 
 // Helper for translating log types
 const typeTranslations: {[key: string]: string} = {
@@ -181,15 +178,20 @@ const AddLogModal = ({ visible, onClose, babyId }: { visible: boolean; onClose: 
  * and allows users to add new entries via a modal.
  * @returns {React.JSX.Element} The rendered tracking screen component.
  */
+type TrackingScreenRouteProp = RouteProp<MainTabParamList, 'Tracking'>;
+
 const TrackingScreen = () => {
   useEffect(() => {
     console.log('📈✅ TrackingScreen: Component has mounted.');
   }, []);
 
   const {selectedBaby} = useBaby();
+  const route = useRoute<TrackingScreenRouteProp>();
   const [logs, setLogs] = useState<AnyLog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState<Category>('development');
+  const [activeCategory, setActiveCategory] = useState<Category>(
+    route.params?.initialCategory || 'development',
+  );
   const [modalVisible, setModalVisible] = useState(false); // State for modal
   const isFocused = useIsFocused();
 

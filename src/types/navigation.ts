@@ -8,6 +8,7 @@
  */
 
 import type {NavigatorScreenParams} from '@react-navigation/native';
+import {Category} from './log';
 
 /**
  * Defines the screen parameters for the main bottom tab navigator.
@@ -16,7 +17,7 @@ import type {NavigatorScreenParams} from '@react-navigation/native';
  */
 export type MainTabParamList = {
   Home: undefined;
-  Tracking: undefined;
+  Tracking: {initialCategory: Category} | undefined;
   AI: undefined;
   Guides: undefined;
   Profile: undefined;
