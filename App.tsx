@@ -88,10 +88,7 @@ const AppContent = () => {
             name="MainTabs"
             component={MainTabNavigator}
             options={{
-              title: 'BabyWise',
-              headerTitleAlign: 'center',
-              headerShown: true,
-              headerRight: () => <HeaderRightMenu />,
+              headerShown: false, // Header will be managed by the Tab Navigator now
             }}
           />
           <Stack.Screen name="Profile" component={ProfileScreen} />

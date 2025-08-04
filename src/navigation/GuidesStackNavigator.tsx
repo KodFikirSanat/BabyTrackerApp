@@ -11,6 +11,8 @@
 
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import HeaderRightMenu from '../components/HeaderRightMenu';
+import HeaderLeftBack from '../components/HeaderLeftBack';
 
 // --- Screen Components ---
 // The screens that are part of this specific navigation stack.
@@ -43,18 +45,25 @@ const GuidesStackNavigator = (): React.JSX.Element => {
     <Stack.Navigator
       // Default options for all screens in this stack.
       screenOptions={{
-        headerShown: false, // Headers will be managed by the screens themselves or not shown.
+        title: 'BabyWise',
+        headerTitleAlign: 'center',
+        headerRight: () => <HeaderRightMenu />,
       }}
       // The first screen to be displayed in this stack.
-      initialRouteName="GuidesList"
-    >
+      initialRouteName="GuidesList">
       <Stack.Screen
         name="GuidesList"
         component={GuidesScreen}
+        // GuidesList is the top level, so it shouldn't have a back button.
+        // We leave headerLeft to its default state.
       />
       <Stack.Screen
         name="GuideDetail"
         component={GuideDetailScreen}
+        options={{
+          // Only show the back button on the detail screen.
+          headerLeft: () => <HeaderLeftBack />,
+        }}
       />
     </Stack.Navigator>
   );

@@ -18,6 +18,7 @@ import TrackingScreen from '../screens/TrackingScreen';
 import AIScreen from '../screens/AIScreen';
 import GuidesStackNavigator from './GuidesStackNavigator';
 import ProfileScreen from '../screens/ProfileScreen';
+import HeaderRightMenu from '../components/HeaderRightMenu';
 
 // Import all icons
 import HomeIcon from '../assets/icons/homeIcon.svg';
@@ -37,19 +38,21 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 const MainTabNavigator = (): React.JSX.Element => {
   console.log('🗂️🎨 MainTabNavigator: Rendering...');
 
-  const screenOptions = {
-    headerShown: false,
-    tabBarActiveTintColor: '#6b9ac4',
-    tabBarInactiveTintColor: 'gray',
-  };
-
   const getTabBarIcon =
     (Icon: React.FC<SvgProps>) =>
     ({color, size}: {color: string; size: number}) =>
       <Icon width={size} height={size} fill={color} />;
 
   return (
-    <Tab.Navigator initialRouteName="Home" screenOptions={screenOptions}>
+    <Tab.Navigator
+      initialRouteName="Home"
+      screenOptions={{
+        title: 'BabyWise',
+        headerTitleAlign: 'center',
+        headerRight: () => <HeaderRightMenu />,
+        tabBarActiveTintColor: '#6b9ac4',
+        tabBarInactiveTintColor: 'gray',
+      }}>
       <Tab.Screen
         name="Home"
         component={HomeScreen}
@@ -78,6 +81,7 @@ const MainTabNavigator = (): React.JSX.Element => {
         name="Guides"
         component={GuidesStackNavigator}
         options={{
+          headerShown: false, // This navigator will manage its own header
           tabBarLabel: 'Rehberler',
           tabBarIcon: getTabBarIcon(GuideIcon),
         }}
