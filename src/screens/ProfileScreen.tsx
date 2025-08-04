@@ -11,11 +11,11 @@
 import React, {useState} from 'react';
 import {View, Text, Button, StyleSheet, Alert, ActivityIndicator} from 'react-native';
 import auth from '@react-native-firebase/auth';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import type {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
 import {useAuth} from '../context/AuthContext';
-import {RootStackParamList} from '../types/navigation';
+import {MainTabParamList} from '../types/navigation';
 
-type ProfileScreenProps = NativeStackScreenProps<RootStackParamList, 'Profile'>;
+type ProfileScreenProps = BottomTabScreenProps<MainTabParamList, 'Profile'>;
 
 /**
  * @name ProfileScreen
@@ -30,7 +30,8 @@ const ProfileScreen = ({navigation}: ProfileScreenProps): React.JSX.Element => {
 
   const handleAddBaby = () => {
     console.log('👤👶 ProfileScreen.handleAddBaby: Navigating to AddBaby screen.');
-    navigation.navigate('AddBaby');
+    // JULES: Corrected navigation call to target the parent navigator.
+    navigation.getParent()?.navigate('AddBaby');
   };
   
   /**
