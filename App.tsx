@@ -3,13 +3,13 @@
 /**
  * @file The absolute entry point of the Bebeğim application.
  * It sets up top-level providers and manages the navigation flow based
- * on authentication and user data (e.g., whether a baby profile exists).
+ * on authentication and user data.
  *
  * @format
  */
 
 import React, {useEffect} from 'react';
-import {NavigationContainer, useNavigation} from '@react-navigation/native';
+import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import firestore from '@react-native-firebase/firestore';
@@ -24,105 +24,93 @@ import EntryScreen from './src/screens/EntryScreen';
 import AddBabyScreen from './src/screens/AddBabyScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import MainTabNavigator from './src/navigation/MainTabNavigator';
+import HeaderRightMenu from './src/components/HeaderRightMenu'; // Import the new component
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 /**
- * A non-rendering component that orchestrates the main navigation flow.
- * It listens to authentication and data loading states and redirects the user
- * to the appropriate screen (Splash, Entry, AddBaby, or MainTabs).
- * It also handles the registration of the FCM token for push notifications.
+ * Renders the correct screen within a single, stable navigator based on app state.
+ * This declarative approach is recommended by React Navigation.
  */
-const NavigationLogic = () => {
+const AppContent = () => {
   const {user, loading: authLoading} = useAuth();
   const {babies, loading: babiesLoading} = useBaby();
-  const navigation = useNavigation();
 
+  // Effect for FCM token registration
   useEffect(() => {
-    // This effect handles the navigation logic based on auth and data state.
-    if (authLoading || babiesLoading) {
-      console.log('📱⏳ App.tsx: Waiting for auth and baby data to load...');
-      // Don't navigate until both are loaded. The Splash screen is shown by default.
-      return;
-    }
-
-    let routeName: keyof RootStackParamList;
-    if (!user) {
-      routeName = 'Entry';
-    } else if (babies.length === 0) {
-      routeName = 'AddBaby';
-    } else {
-      routeName = 'MainTabs';
-    }
-
-    console.log(`📱➡️ App.tsx: Navigating to initial route: ${routeName}`);
-    navigation.reset({
-      index: 0,
-      routes: [{name: routeName}],
-    });
-  }, [user, babies, authLoading, babiesLoading, navigation]);
-
-  useEffect(() => {
-    // This effect handles FCM token registration.
     const setupNotifications = async () => {
       if (user) {
         try {
           await messaging().requestPermission();
           const fcmToken = await messaging().getToken();
           if (fcmToken) {
-            console.log('📱✅ FCM Token obtained successfully.');
+            console.log('📱 FCM Token:', fcmToken);
             await firestore()
               .collection('users')
               .doc(user.uid)
               .set({fcmToken}, {merge: true});
           }
         } catch (error) {
-          console.error('📱❌ Error setting up notifications:', error);
+          console.error('Error setting up notifications:', error);
         }
       }
     };
     setupNotifications();
   }, [user]);
 
-  return null; // This component does not render anything.
+  return (
+    <Stack.Navigator>
+      {authLoading || babiesLoading ? (
+        // While loading, show only the splash screen with no header
+        <Stack.Screen
+          name="Splash"
+          component={SplashScreen}
+          options={{headerShown: false}}
+        />
+      ) : !user ? (
+        // If not authenticated, show the entry screen with no header
+        <Stack.Screen
+          name="Entry"
+          component={EntryScreen}
+          options={{headerShown: false}}
+        />
+      ) : babies.length === 0 ? (
+        // If authenticated but no baby, prompt to add one with no header
+        <Stack.Screen
+          name="AddBaby"
+          component={AddBabyScreen}
+          options={{headerShown: false}}
+        />
+      ) : (
+        // If authenticated with a baby, show the main app with the custom header
+        <>
+          <Stack.Screen
+            name="MainTabs"
+            component={MainTabNavigator}
+            options={{
+              title: 'BabyWise',
+              headerTitleAlign: 'center',
+              headerShown: true,
+              headerRight: () => <HeaderRightMenu />,
+            }}
+          />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+        </>
+      )}
+    </Stack.Navigator>
+  );
 };
 
 /**
- * Defines the application's root navigation stack.
- * It includes all top-level screens: Splash, Entry, AddBaby, Profile,
- * and the main tab navigator.
- * @returns A React Element containing the stack navigator.
- */
-const AppNavigator = () => (
-  <>
-    <NavigationLogic />
-    <Stack.Navigator screenOptions={{headerShown: false}}>
-      <Stack.Screen name="Splash" component={SplashScreen} />
-      <Stack.Screen name="Entry" component={EntryScreen} />
-      <Stack.Screen name="AddBaby" component={AddBabyScreen} />
-      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
-      <Stack.Screen name="Profile" component={ProfileScreen} />
-    </Stack.Navigator>
-  </>
-);
-
-/**
- * The root component of the entire application.
- * It wraps the whole app in necessary providers like SafeAreaProvider,
- * AuthProvider, BabyProvider, and the main NavigationContainer.
- * @returns The main application React Element.
+ * The root component setting up providers and the navigation container.
  */
 function App(): React.JSX.Element {
-  useEffect(() => {
-    console.log('📱✅ App: Component mounted and providers are set up.');
-  }, []);
-
   return (
     <SafeAreaProvider>
       <AuthProvider>
         <BabyProvider>
           <NavigationContainer>
-            <AppNavigator />
+            <AppContent />
           </NavigationContainer>
         </BabyProvider>
       </AuthProvider>
