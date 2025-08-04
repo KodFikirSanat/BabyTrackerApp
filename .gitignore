@@ -75,6 +75,9 @@ yarn-error.log
 
 # Google Services
 google-services.json
-GoogleService-Info.plistgoogle-services.json
+GoogleService-Info.plist
+
+# Android Keystore Credentials
+android/gradle.properties
 GoogleService-Info.plist
 my-release-key.keystore
