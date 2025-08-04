@@ -19,6 +19,15 @@ import AIScreen from '../screens/AIScreen';
 import GuidesStackNavigator from './GuidesStackNavigator';
 import ProfileScreen from '../screens/ProfileScreen';
 
+// JULES: Import SVG files to be used as icons.
+// The user will need to create these files.
+import HomeIcon from '../assets/icons/home.svg';
+import TrackingIcon from '../assets/icons/tracking.svg';
+import AIIcon from '../assets/icons/ai.svg';
+import GuidesIcon from '../assets/icons/guides.svg';
+import ProfileIcon from '../assets/icons/profile.svg';
+
+
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 /**
@@ -41,27 +50,42 @@ const MainTabNavigator = (): React.JSX.Element => {
       <Tab.Screen
         name="Home"
         component={HomeScreen}
-        options={{tabBarLabel: 'Ana Sayfa'}}
+        options={{
+          tabBarLabel: 'Ana Sayfa',
+          tabBarIcon: ({color}) => <HomeIcon width={24} height={24} fill={color} />,
+        }}
       />
       <Tab.Screen
         name="Tracking"
         component={TrackingScreen}
-        options={{tabBarLabel: 'Takip'}}
+        options={{
+          tabBarLabel: 'Takip',
+          tabBarIcon: ({color}) => <TrackingIcon width={24} height={24} fill={color} />,
+        }}
       />
       <Tab.Screen
         name="AI"
         component={AIScreen}
-        options={{tabBarLabel: 'Yapay Uzman'}}
+        options={{
+          tabBarLabel: 'Yapay Uzman',
+          tabBarIcon: ({color}) => <AIIcon width={24} height={24} fill={color} />,
+        }}
       />
       <Tab.Screen
         name="Guides"
         component={GuidesStackNavigator}
-        options={{tabBarLabel: 'Rehberler'}}
+        options={{
+          tabBarLabel: 'Rehberler',
+          tabBarIcon: ({color}) => <GuidesIcon width={24} height={24} fill={color} />,
+        }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{tabBarLabel: 'Profil'}}
+        options={{
+          tabBarLabel: 'Profil',
+          tabBarIcon: ({color}) => <ProfileIcon width={24} height={24} fill={color} />,
+        }}
       />
     </Tab.Navigator>
   );
