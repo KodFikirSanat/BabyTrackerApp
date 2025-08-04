@@ -84,7 +84,7 @@ const HomeScreen = ({navigation}: HomeScreenProps): React.JSX.Element => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Ana Sayfa</Text>
-      <Text style={styles.subtitle}>Aktif Bebek: {selectedBaby.name}</Text>
+      <Text style={styles.subtitle}>Aktif Bebekler: {selectedBaby.name}</Text>
       {/* 
         This is the main content area for the dashboard.
         You can add components here to show summaries of sleep, feeding, etc.
