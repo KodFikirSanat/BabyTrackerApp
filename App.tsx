@@ -88,7 +88,6 @@ const AppNavigator = () => (
       <Stack.Screen name="Entry" component={EntryScreen} />
       <Stack.Screen name="AddBaby" component={AddBabyScreen} />
       <Stack.Screen name="MainTabs" component={MainTabNavigator} />
-      <Stack.Screen name="Profile" component={ProfileScreen} />
     </Stack.Navigator>
   </>
 );

@@ -11,11 +11,16 @@
 import React, {useState} from 'react';
 import {View, Text, Button, StyleSheet, Alert, ActivityIndicator} from 'react-native';
 import auth from '@react-native-firebase/auth';
-import type {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
 import {useAuth} from '../context/AuthContext';
-import {MainTabParamList} from '../types/navigation';
+import {CompositeScreenProps} from '@react-navigation/native';
+import type {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {MainTabParamList, RootStackParamList} from '../types/navigation';
 
-type ProfileScreenProps = BottomTabScreenProps<MainTabParamList, 'Profile'>;
+type ProfileScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<MainTabParamList, 'Profile'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
 
 /**
  * @name ProfileScreen
@@ -30,8 +35,8 @@ const ProfileScreen = ({navigation}: ProfileScreenProps): React.JSX.Element => {
 
   const handleAddBaby = () => {
     console.log('👤👶 ProfileScreen.handleAddBaby: Navigating to AddBaby screen.');
-    // JULES: Corrected navigation call to target the parent navigator.
-    navigation.getParent()?.navigate('AddBaby');
+    // With CompositeScreenProps, a direct navigate call works correctly.
+    navigation.navigate('AddBaby');
   };
   
   /**
