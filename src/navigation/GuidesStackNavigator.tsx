@@ -48,6 +48,7 @@ const GuidesStackNavigator = (): React.JSX.Element => {
         title: 'BabyWise',
         headerTitleAlign: 'center',
         headerRight: () => <HeaderRightMenu />,
+        headerLeft: () => <HeaderLeftBack />,
       }}
       // The first screen to be displayed in this stack.
       initialRouteName="GuidesList">
@@ -55,15 +56,12 @@ const GuidesStackNavigator = (): React.JSX.Element => {
         name="GuidesList"
         component={GuidesScreen}
         // GuidesList is the top level, so it shouldn't have a back button.
-        // We leave headerLeft to its default state.
+        // The visibility of the back button is now controlled by the component itself.
       />
       <Stack.Screen
         name="GuideDetail"
         component={GuideDetailScreen}
-        options={{
-          // Only show the back button on the detail screen.
-          headerLeft: () => <HeaderLeftBack />,
-        }}
+        // No specific options needed here anymore for the header.
       />
     </Stack.Navigator>
   );
