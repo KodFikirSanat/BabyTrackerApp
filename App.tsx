@@ -9,6 +9,7 @@
  */
 
 import React, {useEffect} from 'react';
+import {Image} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -22,21 +23,20 @@ import {RootStackParamList} from './src/types/navigation';
 import SplashScreen from './src/screens/SplashScreen';
 import EntryScreen from './src/screens/EntryScreen';
 import AddBabyScreen from './src/screens/AddBabyScreen';
-import ProfileScreen from './src/screens/ProfileScreen';
 import MainTabNavigator from './src/navigation/MainTabNavigator';
-import HeaderRightMenu from './src/components/HeaderRightMenu'; // Import the new component
+import HeaderRightMenu from './src/components/HeaderRightMenu';
+import HeaderLeftBack from './src/components/HeaderLeftBack';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 /**
  * Renders the correct screen within a single, stable navigator based on app state.
- * This declarative approach is recommended by React Navigation.
+ * This component also defines the global header for the entire application.
  */
 const AppContent = () => {
   const {user, loading: authLoading} = useAuth();
   const {babies, loading: babiesLoading} = useBaby();
 
-  // Effect for FCM token registration
   useEffect(() => {
     const setupNotifications = async () => {
       if (user) {
@@ -59,43 +59,39 @@ const AppContent = () => {
   }, [user]);
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerTitleAlign: 'center',
+        headerRight: () => <HeaderRightMenu />,
+        headerLeft: () => <HeaderLeftBack />,
+        headerTitle: () => (
+          <Image
+            source={require('./src/assets/babywise/head_logo.jpg')}
+            style={{width: 120, height: 40, resizeMode: 'contain'}}
+          />
+        ),
+      }}>
       {authLoading || babiesLoading ? (
-        // While loading, show only the splash screen with no header
         <Stack.Screen
           name="Splash"
           component={SplashScreen}
           options={{headerShown: false}}
         />
       ) : !user ? (
-        // If not authenticated, show the entry screen with no header
         <Stack.Screen
           name="Entry"
           component={EntryScreen}
           options={{headerShown: false}}
         />
       ) : babies.length === 0 ? (
-        // If authenticated but no baby, prompt to add one with no header
         <Stack.Screen
           name="AddBaby"
           component={AddBabyScreen}
           options={{headerShown: false}}
         />
       ) : (
-        // If authenticated with a baby, show the main app with the custom header
-        <>
-          <Stack.Screen
-            name="MainTabs"
-            component={MainTabNavigator}
-            options={{
-              title: 'BabyWise',
-              headerTitleAlign: 'center',
-              headerShown: true,
-              headerRight: () => <HeaderRightMenu />,
-            }}
-          />
-          <Stack.Screen name="Profile" component={ProfileScreen} />
-        </>
+        // The MainTabs screen will now inherit the universal header from the navigator
+        <Stack.Screen name="MainTabs" component={MainTabNavigator} />
       )}
     </Stack.Navigator>
   );
