@@ -1,79 +1,198 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+<div align="center">
+  <img src="https://placehold.co/600x300/e5d4f1/333333?text=BabyWise" alt="BabyWise App Banner"/>
+</div>
 
-# Getting Started
+# BabyWise 👶 - Your Smart Baby Tracker
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+<details>
+  <summary>Türkçe</summary>
 
-## Step 1: Start the Metro Server
+  **BabyWise**, ebeveynlerin bebeklerinin gelişimini, rutinlerini ve sağlık aşamalarını takip etmelerine yardımcı olmak için tasarlanmış modern, çapraz platform bir mobil uygulamadır. React Native ile geliştirilen ve Firebase ile desteklenen bu uygulama, yeni ebeveynler için sorunsuz ve sezgisel bir deneyim sunmayı hedeflemektedir.
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+  Bu proje, **Kod Fikir Sanat** ekibi tarafından geliştirilmektedir.
 
-To start Metro, run the following command from the _root_ of your React Native project:
+  ---
 
-```bash
-# using npm
-npm start
+  ## ✨ Özellikler
 
-# OR using Yarn
-yarn start
-```
+  -   **📈 Gelişim Takibi:** Boy ve kilo gibi temel büyüme metriklerini kaydedin ve görselleştirin.
+  -   **ρου Rutin Takibi:** Uyku düzenleri, beslenme programları ve bez değiştirme gibi günlük aktiviteleri kolayca kaydedin.
+  -   **🤖 Yapay Zeka Uzmanı:** Bebek gelişimi hakkında sorular sormak için entegre bir sohbet arayüzü sunar; bu arayüz, bağlamsal yanıtlar için takip edilen verileri opsiyonel olarak kullanabilir.
+  -   **📚 Rehberler:** Çocuk gelişimi aşamaları üzerine derlenmiş makale ve rehberlerden oluşan bir kütüphane.
+  -   **👤 Kullanıcı ve Bebek Profilleri:** Kullanıcı ve bebek bilgilerini tek bir yerden yönetin.
+  -   **🔔 Bildirim Sistemi:** Önemli olaylar (aşı tarihleri gibi) için hatırlatıcılar kurun.
 
-## Step 2: Start your Application
+  ---
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
+  ## 🛠️ Teknoloji Yığını
 
-### For Android
+  Bu proje, modern, kararlı ve ölçeklenebilir bir teknoloji yığını ile inşa edilmiştir.
 
-```bash
-# using npm
-npm run android
+  -   **Ana Çerçeve:** [React Native](https://reactnative.dev/)
+  -   **Dil:** [TypeScript](https://www.typescriptlang.org/)
+  -   **Navigasyon:** [React Navigation](https://reactnavigation.org/)
+  -   **Backend ve Veritabanı:** [Firebase](https://firebase.google.com/) (Kimlik Doğrulama, Firestore, vb.)
+  -   **Durum Yönetimi:** React Context API / Zustand
+  -   **API İstekleri:** Axios
 
-# OR using Yarn
-yarn android
-```
+  ---
 
-### For iOS
+  ## 🚀 Başlangıç
 
-```bash
-# using npm
-npm run ios
+  Projenin yerel bir kopyasını edinmek ve çalıştırmak için aşağıdaki adımları izleyin.
 
-# OR using Yarn
-yarn ios
-```
+  ### Ön Koşullar
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+  -   Node.js (>=18)
+  -   NPM veya Yarn
+  -   Bir emülatör/simülatörde çalıştırmak için Android Studio veya Xcode.
+  -   Düzgün yapılandırılmış bir React Native geliştirme ortamı.
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+  ### Kurulum
 
-## Step 3: Modifying your App
+  1.  **Depoyu klonlayın**
+      ```sh
+      git clone [YOUR_REPOSITORY_LINK_HERE]
+      ```
+  2.  **Proje dizinine gidin**
+      ```sh
+      cd BabyTrackerApp 
+      ```
+  3.  **NPM paketlerini kurun**
+      ```sh
+      npm install
+      ```
 
-Now that you have successfully run the app, let's modify it.
+  ### Uygulamayı Çalıştırma
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+  1.  **Metro sunucusunu başlatın**
+      ```sh
+      npx react-native start
+      ```
+  2.  **Android veya iOS'ta çalıştırın** (ayrı bir terminalde)
+      ```sh
+      # Android için
+      npx react-native run-android
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+      # iOS için
+      npx react-native run-ios
+      ```
 
-## Congratulations! :tada:
+  ---
 
-You've successfully run and modified your React Native App. :partying_face:
+  ## 🤝 Katkıda Bulunma
 
-### Now what?
+  Bu proje işbirliğine açık bir çalışmadır. İnsanlardan veya yapay zeka asistanlarından gelen tüm katkılar, proje kılavuzlarımızda tanımlanan standartlara uymalıdır.
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
+  -   **Yapay Zeka İşbirliği Kılavuzu:** Herhangi bir değişiklik yapmadan önce, kodlama, yorum ekleme ve loglama standartları için lütfen `/AIPrompts` dizinindeki dosyalara bakın.
 
-# Troubleshooting
+  ---
 
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+  ## 👥 Ekip
 
-# Learn More
+  -   **React Native Geliştirme:** [Senin Adın/GitHub Kullanıcı Adın]
+  -   **UI/UX ve Tasarım:** [Tasarımcı Arkadaşının Adı]
+  -   **Backend (Firebase):** [Backend'ci Arkadaşının Adı]
+</details>
 
-To learn more about React Native, take a look at the following resources:
+<details>
+  <summary>English</summary>
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+  **BabyWise** is a modern, cross-platform mobile application designed to help parents track their baby's development, routines, and health milestones. Built with React Native and powered by Firebase, this app aims to provide a seamless and intuitive experience for new parents.
+
+  This project is developed by the team at **Kod Fikir Sanat**.
+
+  ---
+
+  ## ✨ Features
+
+  -   **📈 Development Tracking:** Log and visualize key growth metrics like height and weight.
+  -   **ρου Routines Monitoring:** Easily record daily activities such as sleep patterns, feeding schedules, and diaper changes.
+  -   **🤖 AI Expert:** An integrated chat interface to ask questions about baby development, optionally using the tracked data for contextual answers.
+  -   **📚 Expert Guides:** A curated library of articles and guides on child development milestones.
+  -   **👤 User & Baby Profiles:** Manage user and baby information in one place.
+  -   **🔔 Notification System:** Set reminders for important events like vaccination dates.
+
+  ---
+
+  ## 🛠️ Tech Stack
+
+  This project is built with a modern, stable, and scalable technology stack.
+
+  -   **Core Framework:** [React Native](https://reactnative.dev/)
+  -   **Language:** [TypeScript](https://www.typescriptlang.org/)
+  -   **Navigation:** [React Navigation](https://reactnavigation.org/)
+  -   **Backend & Database:** [Firebase](https://firebase.google.com/) (Authentication, Firestore, etc.)
+  -   **State Management:** React Context API / Zustand
+  -   **API Requests:** Axios
+
+  ---
+
+  ## 🚀 Getting Started
+
+  To get a local copy up and running, follow these simple steps.
+
+  ### Prerequisites
+
+  -   Node.js (>=18)
+  -   NPM or Yarn
+  -   Android Studio or Xcode for running on an emulator/simulator.
+  -   A properly configured React Native development environment.
+
+  ### Installation
+
+  1.  **Clone the repo**
+      ```sh
+      git clone [YOUR_REPOSITORY_LINK_HERE]
+      ```
+  2.  **Navigate to the project directory**
+      ```sh
+      cd BabyTrackerApp 
+      ```
+  3.  **Install NPM packages**
+      ```sh
+      npm install
+      ```
+
+  ### Running the Application
+
+  1.  **Start the Metro server**
+      ```sh
+      npx react-native start
+      ```
+  2.  **Run on Android or iOS** (in a separate terminal)
+      ```sh
+      # For Android
+      npx react-native run-android
+
+      # For iOS
+      npx react-native run-ios
+      ```
+
+  ---
+
+  ## 🤝 Contributing
+
+  This project is a collaborative effort. All contributions, whether from humans or AI assistants, must adhere to the standards defined in our project guides.
+
+  -   **AI Collaboration Guide:** Please refer to the files in the `/AIPrompts` directory for detailed standards on coding, commenting, and logging before making any changes.
+
+  ---
+
+  ## 👥 The Team
+
+  -   **React Native Development:** [Your Name/GitHub Username]
+  -   **UI/UX & Styling:** [Your Designer's Name]
+  -   **Backend (Firebase):** [Your Backend Developer's Name]
+</details>
+
+<br>
+
+<div style="display: flex; justify-content: space-between; align-items: center;">
+  <a href="https://github.com/KodFikirSanat" style="font-size: 1.5em; font-weight: bold;">Kod Fikir Sanat</a>
+  <a href="https://github.com/React-Cooker" style="font-size: 1.5em; font-weight: bold;">React Cooker</a>
+</div>
+![WhatsApp Görsel 2025-08-05 saat 10 59 35_5a6ff5b9](https://github.com/user-attachments/assets/fe68b855-40d8-4c3c-ba0b-5e0d68655ea5)
+![WhatsApp Görsel 2025-08-05 saat 10 59 19_a4de6362](https://github.com/user-attachments/assets/38b5ba52-9c8b-4ac6-b217-0bf1f2b6abb0)
+![WhatsApp Görsel 2025-08-05 saat 10 58 33_0d5bb970](https://github.com/user-attachments/assets/ec048fae-dda1-4751-8e5c-6b7e63d31d84)
+![WhatsApp Görsel 2025-08-05 saat 10 50 56_e26b58bd](https://github.com/user-attachments/assets/aa371aa5-cd4f-4c70-abc4-468a3c5b467c)
