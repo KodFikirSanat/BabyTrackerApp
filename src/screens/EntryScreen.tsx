@@ -2,150 +2,99 @@
 
 /**
  * @file EntryScreen.tsx
- * @description This screen serves as the main gateway for unauthenticated users.
- *              It provides functionality for both signing up for a new account and
- *              logging in with existing credentials using Firebase Authentication.
+ * @description This is the initial screen for unauthenticated users, providing options
+ *              to either log in to an existing account or sign up for a new one.
  *
  * @format
  */
 
 import React, {useState} from 'react';
 import {
-  View, Text, StyleSheet, Button,
-  TextInput, Alert, ActivityIndicator
-} from 'react-native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {RootStackParamList} from '../types/navigation';
-import auth from '@react-native-firebase/auth';
+  View,
 
-/**
- * @type EntryScreenProps
- * @description Defines the navigation properties available to the EntryScreen.
- */
-type EntryScreenProps = NativeStackScreenProps<RootStackParamList, 'Entry'>;
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+  Image, // Import Image component
+} from 'react-native';
+import auth from '@react-native-firebase/auth';
 
 /**
  * @name EntryScreen
  * @description The main component for the entry screen.
- * @param {EntryScreenProps} props - The navigation props.
  * @returns {React.JSX.Element} A React Element representing the entry screen.
  */
-const EntryScreen = ({navigation}: EntryScreenProps): React.JSX.Element => {
+const EntryScreen = (): React.JSX.Element => {
   console.log('🚪✅ EntryScreen: Component has mounted.');
 
-  // --- State ---
-  // State to hold the user's input for email and password.
+  // --- State Management ---
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  // State to manage loading indicators for async operations.
-  const [loading, setLoading] = useState(false);
+  const [isLogin, setIsLogin] = useState(true); // Toggles between Login and Sign Up mode
 
   /**
-   * @function handleSignUp
-   * @description Handles the user sign-up process using Firebase Auth.
+   * @function handleAuthentication
+   * @description Handles both user sign-up and login based on the `isLogin` state.
    */
-  const handleSignUp = async () => {
-    // Basic input validation.
-    if (!email || !password) {
-      Alert.alert('Eksik Bilgi', 'Lütfen e-posta ve şifre girin.');
-      return;
-    }
-    
-    console.log(`🚪➡️ EntryScreen.handleSignUp: Attempting to sign up with email: ${email}`);
-    setLoading(true);
-
+  const handleAuthentication = async () => {
     try {
-      // Use Firebase Auth to create a new user account.
-      await auth().createUserWithEmailAndPassword(email, password);
-      console.log('🚪✅ EntryScreen.handleSignUp: User account created & signed in successfully.');
-      // After successful sign-up, the onAuthStateChanged listener in AuthContext
-      // will handle navigation automatically. We don't need to navigate here.
-    } catch (error: any) {
-      console.error('🚪❌ EntryScreen.handleSignUp: Error during sign-up:', error);
-      // Provide user-friendly error messages based on the Firebase error code.
-      if (error.code === 'auth/email-already-in-use') {
-        Alert.alert('Kayıt Başarısız', 'Bu e-posta adresi zaten kullanılıyor.');
-      } else if (error.code === 'auth/invalid-email') {
-        Alert.alert('Kayıt Başarısız', 'Geçersiz bir e-posta adresi girdiniz.');
-      } else if (error.code === 'auth/weak-password') {
-        Alert.alert('Kayıt Başarısız', 'Şifreniz çok zayıf. Lütfen en az 6 karakterli bir şifre seçin.');
+      if (isLogin) {
+        console.log('🚪➡️ EntryScreen.handleAuthentication: Attempting to sign in...');
+        await auth().signInWithEmailAndPassword(email, password);
+        console.log('🚪✅ EntryScreen.handleAuthentication: User signed in successfully!');
       } else {
-        Alert.alert('Bir Hata Oluştu', 'Kayıt işlemi sırasında bir sorun oluştu.');
+        console.log('🚪➡️ EntryScreen.handleAuthentication: Attempting to create user...');
+        await auth().createUserWithEmailAndPassword(email, password);
+        console.log('🚪✅ EntryScreen.handleAuthentication: User account created & signed in!');
       }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * @function handleLogin
-   * @description Handles the user login process using Firebase Auth.
-   */
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Eksik Bilgi', 'Lütfen e-posta ve şifre girin.');
-      return;
-    }
-
-    console.log(`🚪➡️ EntryScreen.handleLogin: Attempting to log in with email: ${email}`);
-    setLoading(true);
-
-    try {
-      // Use Firebase Auth to sign in the user.
-      await auth().signInWithEmailAndPassword(email, password);
-      console.log('🚪✅ EntryScreen.handleLogin: User signed in successfully.');
-      // Similar to sign-up, onAuthStateChanged in AuthContext will handle navigation.
     } catch (error: any) {
-      console.error('🚪❌ EntryScreen.handleLogin: Error during login:', error);
-      if (
-        error.code === 'auth/user-not-found' ||
-        error.code === 'auth/wrong-password' ||
-        error.code === 'auth/invalid-credential'
-      ) {
-        Alert.alert('Giriş Başarısız', 'Geçersiz e-posta veya şifre.');
-      } else if (error.code === 'auth/invalid-email') {
-        Alert.alert('Giriş Başarısız', 'Geçersiz bir e-posta adresi girdiniz.');
-      } else {
-        Alert.alert('Bir Hata Oluştu', 'Giriş işlemi sırasında bir sorun oluştu.');
-      }
-    } finally {
-      setLoading(false);
+      console.error('🚪❌ EntryScreen.handleAuthentication: Authentication error:', error);
+      Alert.alert('Giriş Hatası', error.message);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bebeğim'e Hoş Geldiniz!</Text>
+      <Image
+        source={require('../assets/babywise/app_icon.jpg')}
+        style={styles.logo}
+      />
+      <Text style={styles.title}>Hoşgeldiniz</Text>
       
-      {/* Email Input */}
       <TextInput
         style={styles.input}
-        placeholder="E-posta"
         value={email}
         onChangeText={setEmail}
-        keyboardType="email-address"
+        placeholder="E-posta"
+        placeholderTextColor="#888" // Darker placeholder text
         autoCapitalize="none"
-        autoComplete="email"
+        keyboardType="email-address"
       />
-      
-      {/* Password Input */}
       <TextInput
         style={styles.input}
-        placeholder="Şifre"
         value={password}
         onChangeText={setPassword}
-        secureTextEntry // Hides the password characters.
+        placeholder="Şifre"
+        placeholderTextColor="#888" // Darker placeholder text
+        secureTextEntry
       />
 
-      {/* If an operation is in progress, show an indicator, otherwise show buttons. */}
-      {loading ? (
-        <ActivityIndicator size="large" color="#6b9ac4" style={styles.loader} />
-      ) : (
-        <View style={styles.buttonContainer}>
-          <Button title="Kayıt Ol" onPress={handleSignUp} />
-          <Button title="Giriş Yap" onPress={handleLogin} />
-        </View>
-      )}
+      <View style={styles.buttonContainer}>
+        <Button
+          title={isLogin ? 'Giriş Yap' : 'Kayıt Ol'}
+          onPress={handleAuthentication}
+          color="#6b9ac4"
+        />
+      </View>
+
+      <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
+        <Text style={styles.toggleText}>
+          {isLogin ? 'Hesabın yok mu? Kayıt Ol' : 'Zaten hesabın var mı? Giriş Yap'}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -156,34 +105,44 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
     padding: 20,
+    backgroundColor: '#FFFFFF',
+  },
+  logo: {
+    width: 207,
+    height: 207,
+    borderRadius: 75,
+    marginBottom: 30,
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#333333',
+    color: '#333',
     marginBottom: 30,
   },
   input: {
     width: '100%',
-    height: 44,
-    padding: 10,
+    height: 50,
+    borderColor: '#ccc',
     borderWidth: 1,
-    borderColor: 'gray',
-    marginBottom: 15,
     borderRadius: 8,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    fontSize: 16,
+    color: '#000', // Black text color for input
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
     width: '100%',
     marginTop: 10,
+    borderRadius: 8,
+    overflow: 'hidden', // Ensures the borderRadius is applied to the Button
   },
-  loader: {
-      marginTop: 20,
-  }
+  toggleText: {
+    marginTop: 20,
+    color: '#6b9ac4',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
 
 export default EntryScreen;
