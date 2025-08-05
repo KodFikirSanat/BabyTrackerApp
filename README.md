@@ -54,7 +54,7 @@ Düzgün yapılandırılmış bir React Native geliştirme ortamı.
 Kurulum
 Depoyu klonlayın
 
-git clone [YOUR_REPOSITORY_LINK_HERE]
+
 
 
 Proje dizinine gidin
@@ -87,12 +87,7 @@ Bu proje işbirliğine açık bir çalışmadır. İnsanlardan veya yapay zeka a
 
 Yapay Zeka İşbirliği Kılavuzu: Herhangi bir değişiklik yapmadan önce, kodlama, yorum ekleme ve loglama standartları için lütfen /AIPrompts dizinindeki dosyalara bakın.
 
-👥 Ekip
-React Native Geliştirme: [Senin Adın/GitHub Kullanıcı Adın]
 
-UI/UX ve Tasarım: [Tasarımcı Arkadaşının Adı]
-
-Backend (Firebase): [Your Backend Developer's Name]
 
 </details>
 
@@ -146,7 +141,7 @@ A properly configured React Native development environment.
 Installation
 Clone the repo
 
-git clone [YOUR_REPOSITORY_LINK_HERE]
+
 
 
 Navigate to the project directory
@@ -179,12 +174,6 @@ This project is a collaborative effort. All contributions, whether from humans o
 
 AI Collaboration Guide: Please refer to the files in the /AIPrompts directory for detailed standards on coding, commenting, and logging before making any changes.
 
-👥 Ekip
-React Native Development: [Your Name/GitHub Username]
-
-UI/UX & Styling: [Your Designer's Name]
-
-Backend (Firebase): [Your Backend Developer's Name]
 
 </details>
 
