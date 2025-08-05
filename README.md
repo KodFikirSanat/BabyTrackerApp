@@ -183,3 +183,11 @@ Backend (Firebase): [Your Backend Developer's Name]
 <a href="https://github.com/KodFikirSanat" style="font-size: 1.5em; font-weight: bold;">Kod Fikir Sanat</a>
 <a href="https://github.com/React-Cooker" style="font-size: 1.5em; font-weight: bold;">React Cooker</a>
 </div>
+
+<div>
+  ![WhatsApp Görsel 2025-08-05 saat 10 50 56_e26b58bd](https://github.com/user-attachments/assets/b60af0c7-79cb-4c66-841f-81c15e164a86)
+![WhatsApp Görsel 2025-08-05 saat 10 58 33_0d5bb970](https://github.com/user-attachments/assets/70170bcc-9664-4ced-90b5-f25ae88ed50c)
+![WhatsApp Görsel 2025-08-05 saat 10 59 19_a4de6362](https://github.com/user-attachments/assets/f5c6835e-78d5-4aea-b57b-475187fd647f)
+![WhatsApp Görsel 2025-08-05 saat 10 59 35_5a6ff5b9](https://github.com/user-attachments/assets/9ae76c4c-feb2-4c47-ac4e-6eb5e932bca7)
+
+</div>
