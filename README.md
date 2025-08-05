@@ -1,5 +1,6 @@
 <div align="center">
 <img src="https://placehold.co/600x300/e5d4f1/333333?text=BabyWise" alt="BabyWise App Banner"/>
+
 </div>
 
 BabyWise 👶 - Your Smart Baby Tracker
@@ -55,26 +56,31 @@ Depoyu klonlayın
 
 git clone [YOUR_REPOSITORY_LINK_HERE]
 
+
 Proje dizinine gidin
 
 cd BabyTrackerApp 
 
+
 NPM paketlerini kurun
 
 npm install
+
 
 Uygulamayı Çalıştırma
 Metro sunucusunu başlatın
 
 npx react-native start
 
+
 Android veya iOS'ta çalıştırın (ayrı bir terminalde)
 
-# Android için
+# For Android
 npx react-native run-android
 
-# iOS için
+# For iOS
 npx react-native run-ios
+
 
 🤝 Katkıda Bulunma
 Bu proje işbirliğine açık bir çalışmadır. İnsanlardan veya yapay zeka asistanlarından gelen tüm katkılar, proje kılavuzlarımızda tanımlanan standartlara uymalıdır.
@@ -86,7 +92,7 @@ React Native Geliştirme: [Senin Adın/GitHub Kullanıcı Adın]
 
 UI/UX ve Tasarım: [Tasarımcı Arkadaşının Adı]
 
-Backend (Firebase):: [Backend'ci Arkadaşının Adı]
+Backend (Firebase): [Your Backend Developer's Name]
 
 </details>
 
@@ -142,18 +148,22 @@ Clone the repo
 
 git clone [YOUR_REPOSITORY_LINK_HERE]
 
+
 Navigate to the project directory
 
 cd BabyTrackerApp 
+
 
 Install NPM packages
 
 npm install
 
+
 Running the Application
 Start the Metro server
 
 npx react-native start
+
 
 Run on Android or iOS (in a separate terminal)
 
@@ -163,12 +173,13 @@ npx react-native run-android
 # For iOS
 npx react-native run-ios
 
+
 🤝 Contributing
 This project is a collaborative effort. All contributions, whether from humans or AI assistants, must adhere to the standards defined in our project guides.
 
 AI Collaboration Guide: Please refer to the files in the /AIPrompts directory for detailed standards on coding, commenting, and logging before making any changes.
 
-👥 The Team
+👥 Ekip
 React Native Development: [Your Name/GitHub Username]
 
 UI/UX & Styling: [Your Designer's Name]
@@ -179,15 +190,13 @@ Backend (Firebase): [Your Backend Developer's Name]
 
 <br>
 
-<div style="display: flex; justify-content: space-between; align-items: center;">
-<a href="https://github.com/KodFikirSanat" style="font-size: 1.5em; font-weight: bold;">Kod Fikir Sanat</a>
-<a href="https://github.com/React-Cooker" style="font-size: 1.5em; font-weight: bold;">React Cooker</a>
+<div style="font-size: 1.5em; font-weight: bold; overflow: auto;">
+<div style="text-align: center;">
+<img src="https://github.com/user-attachments/assets/b60af0c7-79cb-4c66-841f-81c15e164a86" alt="WhatsApp Görsel 2025-08-05 saat 10 50 56_e26b58bd">
+<img src="https://github.com/user-attachments/assets/70170bcc-9664-4ced-90b5-f25ae88ed50c" alt="WhatsApp Görsel 2025-08-05 saat 10 58 33_0d5bb970">
+<img src="https://github.com/user-attachments/assets/f5c6835e-78d5-4aea-b57b-475187fd647f" alt="WhatsApp Görsel 2025-08-05 saat 10 59 19_a4de6362">
+<img src="https://github.com/user-attachments/assets/9ae76c4c-feb2-4c47-ac4e-6eb5e932bca7" alt="WhatsApp Görsel 2025-08-05 saat 10 59 35_5a6ff5b9">
 </div>
-
-<div>
-  ![WhatsApp Görsel 2025-08-05 saat 10 50 56_e26b58bd](https://github.com/user-attachments/assets/b60af0c7-79cb-4c66-841f-81c15e164a86)
-![WhatsApp Görsel 2025-08-05 saat 10 58 33_0d5bb970](https://github.com/user-attachments/assets/70170bcc-9664-4ced-90b5-f25ae88ed50c)
-![WhatsApp Görsel 2025-08-05 saat 10 59 19_a4de6362](https://github.com/user-attachments/assets/f5c6835e-78d5-4aea-b57b-475187fd647f)
-![WhatsApp Görsel 2025-08-05 saat 10 59 35_5a6ff5b9](https://github.com/user-attachments/assets/9ae76c4c-feb2-4c47-ac4e-6eb5e932bca7)
-
+<a href="https://github.com/KodFikirSanat" style="float: left;">Kod Fikir Sanat</a>
+<a href="https://github.com/React-Cooker" style="float: right;">React Cooker</a>
 </div>
