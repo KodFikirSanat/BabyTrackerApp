@@ -1,23 +1,24 @@
 // src/components/BabyCard.tsx
 
 /**
- * @file A component that displays a summary card for a single baby.
- * It shows the baby's info and provides navigation to tracking categories.
+ * @file An "intelligent" component that displays a summary for a single baby.
+ * It fetches and displays the latest log entries for key metrics itself.
  *
  * @format
  */
 
-import React from 'react';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, Text, StyleSheet, TouchableOpacity, ActivityIndicator} from 'react-native';
+import firestore from '@react-native-firebase/firestore';
 import {useNavigation, CompositeNavigationProp} from '@react-navigation/native';
 import {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {Baby} from '../context/BabyContext';
+import {Baby} from '../context/BabyContext'; // Correct import for Baby type
 import {Category} from '../types/log';
 import {RootStackParamList, MainTabParamList} from '../types/navigation';
 import {Svg, Path} from 'react-native-svg';
 
-// A placeholder for the baby's profile picture
+// --- Default Icons & Types ---
 const DefaultProfileIcon = () => (
   <Svg width="80" height="80" viewBox="0 0 24 24">
     <Path
@@ -27,7 +28,6 @@ const DefaultProfileIcon = () => (
   </Svg>
 );
 
-// Type for the combined navigation props to allow navigating from a Tab to a Stack screen
 type BabyCardNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Home'>,
   NativeStackNavigationProp<RootStackParamList>
@@ -37,26 +37,77 @@ interface BabyCardProps {
   baby: Baby;
 }
 
+// --- Main Component ---
 const BabyCard: React.FC<BabyCardProps> = ({baby}) => {
   const navigation = useNavigation<BabyCardNavigationProp>();
 
-  // Function to calculate age in a user-friendly format
+  // State to hold the latest values for each metric
+  const [latestWeight, setLatestWeight] = useState<string | null>(null);
+  const [latestHeight, setLatestHeight] = useState<string | null>(null);
+  const [latestVaccine, setLatestVaccine] = useState<string | null>(null);
+  const [latestDoctorVisit, setLatestDoctorVisit] = useState<string | null>(null);
+
+  // Loading state for each metric
+  const [loadingStates, setLoadingStates] = useState({
+    weight: true,
+    height: true,
+    vaccine: true,
+    doctor: true,
+  });
+
+  // This effect hook fetches the latest log for each metric.
+  useEffect(() => {
+    // Reset states when baby changes
+    setLoadingStates({ weight: true, height: true, vaccine: true, doctor: true });
+    setLatestWeight(null); setLatestHeight(null); setLatestVaccine(null); setLatestDoctorVisit(null);
+    
+    const fetchLatestLog = (
+      collection: string,
+      type: string,
+      setter: (value: string | null) => void,
+      loaderKey: keyof typeof loadingStates
+    ) => {
+      return firestore()
+        .collection('babies').doc(baby.id).collection(collection)
+        .where('type', '==', type)
+        .orderBy('createdAt', 'desc')
+        .limit(1)
+        .onSnapshot(snapshot => {
+          if (!snapshot.empty) {
+            const docData = snapshot.docs[0].data();
+            if(type === 'weight') setter(`${docData.value} kg`);
+            else if (type === 'height') setter(`${docData.value} cm`);
+            else setter(docData.eventName);
+          } else {
+            setter('Kayıt Yok');
+          }
+          setLoadingStates(prev => ({ ...prev, [loaderKey]: false }));
+        },_ => setLoadingStates(prev => ({ ...prev, [loaderKey]: false })));
+    };
+
+    const unsubscribers = [
+      fetchLatestLog('developmentLogs', 'weight', setLatestWeight, 'weight'),
+      fetchLatestLog('developmentLogs', 'height', setLatestHeight, 'height'),
+      fetchLatestLog('healthLogs', 'vaccination', setLatestVaccine, 'vaccine'),
+      fetchLatestLog('healthLogs', 'doctor_visit', setLatestDoctorVisit, 'doctor'),
+    ];
+
+    return () => unsubscribers.forEach(unsub => unsub());
+  }, [baby]);
+
   const calculateAge = (dateOfBirth: Date): string => {
     const today = new Date();
     let ageInMonths = (today.getFullYear() - dateOfBirth.getFullYear()) * 12 + (today.getMonth() - dateOfBirth.getMonth());
-    if (today.getDate() < dateOfBirth.getDate()) {
-        ageInMonths--;
-    }
+    if (today.getDate() < dateOfBirth.getDate()) ageInMonths--;
     if (ageInMonths < 1) return 'Yenidoğan';
     if (ageInMonths < 24) return `${ageInMonths} Aylık`;
     return `${Math.floor(ageInMonths / 12)} Yaşında`;
   };
 
-  // Handles navigation to the Tracking screen with the correct parameters
   const handleMetricPress = (initialCategory: Category) => {
     navigation.navigate('MainTabs', {
-        screen: 'Tracking',
-        params: { babyId: baby.id, initialCategory },
+      screen: 'Tracking',
+      params: { babyId: baby.id, initialCategory },
     });
   };
 
@@ -69,36 +120,67 @@ const BabyCard: React.FC<BabyCardProps> = ({baby}) => {
       </View>
       <Text style={styles.name}>{baby.name}</Text>
       <Text style={styles.age}>{calculateAge(baby.dateOfBirth.toDate())}</Text>
-      <View style={styles.metricsContainer}>
-        <TouchableOpacity style={styles.metricButton} onPress={() => handleMetricPress('development')}>
-          <Text style={styles.metricText}>Kilo</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.metricButton} onPress={() => handleMetricPress('development')}>
-          <Text style={styles.metricText}>Boy</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.metricButton} onPress={() => handleMetricPress('health')}>
-          <Text style={styles.metricText}>Aşı</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.metricButton} onPress={() => handleMetricPress('health')}>
-          <Text style={styles.metricText}>Doktor</Text>
-        </TouchableOpacity>
+      
+      <View style={styles.metricsGrid}>
+        <MetricDisplayButton
+          label="Kilo"
+          value={latestWeight}
+          isLoading={loadingStates.weight}
+          onPress={() => handleMetricPress('development')}
+        />
+        <MetricDisplayButton
+          label="Boy"
+          value={latestHeight}
+          isLoading={loadingStates.height}
+          onPress={() => handleMetricPress('development')}
+        />
+        <MetricDisplayButton
+          label="Aşı"
+          value={latestVaccine}
+          isLoading={loadingStates.vaccine}
+          onPress={() => handleMetricPress('health')}
+        />
+        <MetricDisplayButton
+          label="Doktor"
+          value={latestDoctorVisit}
+          isLoading={loadingStates.doctor}
+          onPress={() => handleMetricPress('health')}
+        />
       </View>
     </View>
   );
 };
 
+// --- Sub-component for the new metric display buttons ---
+interface MetricDisplayButtonProps {
+  label: string;
+  value: string | null;
+  isLoading: boolean;
+  onPress: () => void;
+}
+const MetricDisplayButton: React.FC<MetricDisplayButtonProps> = ({ label, value, isLoading, onPress }) => (
+    <TouchableOpacity style={styles.metricButton} onPress={onPress}>
+        <Text style={styles.metricValue} numberOfLines={1}>
+            {isLoading ? <ActivityIndicator size="small" /> : value}
+        </Text>
+        <Text style={styles.metricLabel}>{label}</Text>
+    </TouchableOpacity>
+);
+
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 15,
-    padding: 20,
+    borderRadius: 20,
+    paddingVertical: 25,
+    paddingHorizontal: 15,
     marginHorizontal: 10,
     alignItems: 'center',
-    elevation: 4,
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    width: '90%',
   },
   profilePicCircle: {
     width: 120,
@@ -111,29 +193,41 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
   },
   name: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#333',
   },
   age: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#666',
-    marginBottom: 20,
+    marginBottom: 25,
   },
-  metricsContainer: {
+  metricsGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
     width: '100%',
   },
   metricButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    width: '45%',
+    aspectRatio: 1.2,
     backgroundColor: '#f8f9fa',
-    borderRadius: 8,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: '2.5%',
+    padding: 10,
   },
-  metricText: {
+  metricValue: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000',
+    height: 24, // Give a fixed height to prevent layout shifts
+    marginBottom: 5,
+  },
+  metricLabel: {
     fontSize: 14,
-    fontWeight: '500',
+    color: '#555',
   },
 });
 
