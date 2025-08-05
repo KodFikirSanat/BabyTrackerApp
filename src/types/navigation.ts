@@ -7,7 +7,9 @@
  * @format
  */
 
-import type {NavigatorScreenParams} from '@react-navigation/native';
+import type {CompositeScreenProps, NavigatorScreenParams} from '@react-navigation/native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import type {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
 import {Category} from './log';
 
 /**
@@ -38,5 +40,16 @@ export type RootStackParamList = {
    * navigation parameters to the screens within `MainTabParamList`.
    */
   MainTabs: NavigatorScreenParams<MainTabParamList>;
-  Profile: undefined;
 };
+
+/**
+ * @type ProfileScreenNavigationProps
+ * @description This is a composite type for the Profile screen's navigation props.
+ * It combines the screen's own props as a tab (`BottomTabScreenProps`) with the
+ * props of the parent stack navigator (`NativeStackScreenProps`). This allows `ProfileScreen`
+ * to navigate to screens that exist in the parent stack, like `AddBaby`.
+ */
+export type ProfileScreenNavigationProps = CompositeScreenProps<
+  BottomTabScreenProps<MainTabParamList, 'Profile'>,
+  NativeStackScreenProps<RootStackParamList>
+>;

@@ -11,23 +11,16 @@
 import React, {useState} from 'react';
 import {View, Text, Button, StyleSheet, Alert, ActivityIndicator} from 'react-native';
 import auth from '@react-native-firebase/auth';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useAuth} from '../context/AuthContext';
-import {RootStackParamList} from '../types/navigation';
-
-/**
- * @type ProfileScreenProps
- * @description Defines the navigation properties available to the ProfileScreen.
- */
-type ProfileScreenProps = NativeStackScreenProps<RootStackParamList, 'Profile'>;
+import {ProfileScreenNavigationProps} from '../types/navigation';
 
 /**
  * @name ProfileScreen
  * @description The main component for the user profile screen.
- * @param {ProfileScreenProps} props - The navigation props.
+ * @param {ProfileScreenNavigationProps} props - The navigation props, correctly typed for nested navigation.
  * @returns {React.JSX.Element} A React Element representing the profile screen.
  */
-const ProfileScreen = ({navigation}: ProfileScreenProps): React.JSX.Element => {
+const ProfileScreen = ({navigation}: ProfileScreenNavigationProps): React.JSX.Element => {
   console.log('👤✅ ProfileScreen: Component has mounted.');
 
   // --- Hooks ---
