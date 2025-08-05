@@ -2,46 +2,44 @@
 
 /**
  * @file SplashScreen.tsx
- * @description This screen is displayed while the application is performing
- *              initial loading tasks, such as determining the user's
- *              authentication status or fetching initial data.
+ * @description The very first screen the user sees, indicating that the app is loading.
+ *              It displays while initial authentication and data checks are performed.
  *
  * @format
  */
 
 import React from 'react';
-import {View, Text, ActivityIndicator, StyleSheet} from 'react-native';
+import {View, StyleSheet, Image, ActivityIndicator} from 'react-native';
 
-/**
- * @name SplashScreen
- * @description A simple, stateless component that shows a loading indicator
- *              and a message to the user.
- * @returns {React.JSX.Element} A React Element representing the splash screen.
- */
 const SplashScreen = (): React.JSX.Element => {
-  console.log('⏳✅ SplashScreen: Component has mounted.');
-
+  console.log('💧✅ SplashScreen: Component has mounted.');
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#ffffff" />
-      <Text style={styles.text}>Yükleniyor...</Text>
+      <Image
+        source={require('../assets/babywise/app_icon.jpg')}
+        style={styles.logo}
+      />
+      <ActivityIndicator size="large" color="#6b9ac4" style={styles.spinner} />
     </View>
   );
 };
 
-// --- Styles ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#6b9ac4', // A calming color for a loading screen.
+    backgroundColor: '#FFFFFF', // A clean white background
   },
-  text: {
-    marginTop: 20,
-    fontSize: 18,
-    color: '#ffffff',
-    fontWeight: 'bold',
+  logo: {
+    width: 200, // Set a fixed width for the logo
+    height: 200, // Set a fixed height for the logo
+    borderRadius: 100, // Make it circular
+    marginBottom: 30, // Space between logo and spinner
+  },
+  spinner: {
+    position: 'absolute',
+    bottom: 80, // Position the spinner towards the bottom
   },
 });
 
