@@ -10,6 +10,8 @@ Referans Proje: Bu planda detaylandırılmamış konular (örneğin, bir butonun
 
 Konfigürasyon Dosyaları: Firebase bağlantı bilgileri gibi konfigürasyonlar, referans projeden alınmalıdır.
 
+Refreans proje(yedek proje) konumu(dizini): bu projenin hemen içindeki "BabyTrackerApp-main-backup" isimli klasörde yer almaktadır. Bu klasörde değişiklik yapman gerekmiyor çünkü uyuglamanın çalışmasına işleyişine etki edeceğini zannetmiyorum.
+
 1. Genel Navigasyon Yapısı
 Header (Üst Bilgi Çubuğu):
 
