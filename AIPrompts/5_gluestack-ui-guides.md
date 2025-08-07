@@ -221,3 +221,9 @@ const MetricDisplayButton = ({ label, value, unit, onPress }) => (
     </VStack>
   </Pressable>
 );
+Official Documentation Reference
+For any component or prop not explicitly covered in this guide, refer to the official gluestack-ui documentation as the single source of truth.
+
+Main Documentation: https://gluestack.io/ui/docs
+
+Component List: https://gluestack.io/ui/docs/components/overview

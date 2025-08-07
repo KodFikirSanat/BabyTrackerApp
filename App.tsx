@@ -9,6 +9,8 @@
  */
 
 import React, {useEffect} from 'react';
+import "'./global.css'";
+import { GluestackUIProvider } from "@/'components/ui'/gluestack-ui-provider";
 import {Image} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -91,7 +93,7 @@ const AppContent = () => {
         />
       ) : (
         // The MainTabs screen will now inherit the universal header from the navigator
-        <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+        (<Stack.Screen name="MainTabs" component={MainTabNavigator} />)
       )}
     </Stack.Navigator>
   );
@@ -102,15 +104,15 @@ const AppContent = () => {
  */
 function App(): React.JSX.Element {
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <BabyProvider>
-          <NavigationContainer>
-            <AppContent />
-          </NavigationContainer>
-        </BabyProvider>
-      </AuthProvider>
-    </SafeAreaProvider>
+    <GluestackUIProvider mode="light"><SafeAreaProvider>
+        <AuthProvider>
+          <BabyProvider>
+            <NavigationContainer>
+              <AppContent />
+            </NavigationContainer>
+          </BabyProvider>
+        </AuthProvider>
+      </SafeAreaProvider></GluestackUIProvider>
   );
 }
 
