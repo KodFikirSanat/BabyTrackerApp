@@ -90,8 +90,16 @@ const AppContent = () => {
           options={{headerShown: false}}
         />
       ) : (
-        // The MainTabs screen will now inherit the universal header from the navigator
-        <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+        <>
+          {/* The MainTabs screen will now inherit the universal header from the navigator */}
+          <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+          {/* AddBaby screen should always be available for navigation */}
+          <Stack.Screen
+            name="AddBaby"
+            component={AddBabyScreen}
+            options={{headerShown: false}}
+          />
+        </>
       )}
     </Stack.Navigator>
   );
