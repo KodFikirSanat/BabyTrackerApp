@@ -10,6 +10,7 @@
 
 import React, {useState} from 'react';
 import {View, Text, Button, StyleSheet, Alert, ActivityIndicator} from 'react-native';
+import {Svg, Path} from 'react-native-svg';
 import auth from '@react-native-firebase/auth';
 import {useAuth} from '../context/AuthContext';
 import {ProfileScreenNavigationProps} from '../types/navigation';
@@ -60,6 +61,14 @@ const ProfileScreen = ({navigation}: ProfileScreenNavigationProps): React.JSX.El
 
   return (
     <View style={styles.container}>
+      <View style={styles.profilePicCircle}>
+        <Svg width="80" height="80" viewBox="0 0 24 24">
+          <Path
+            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+            fill="#a9a9a9"
+          />
+        </Svg>
+      </View>
       <Text style={styles.title}>Profil</Text>
       
       {user ? (
@@ -101,6 +110,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 50,
     backgroundColor: '#f8f9fa',
+  },
+  profilePicCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 4,
+    borderColor: '#6b9ac4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+    backgroundColor: '#f0f0f0',
   },
   title: {
     fontSize: 24,

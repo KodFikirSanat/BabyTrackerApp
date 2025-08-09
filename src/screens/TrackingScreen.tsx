@@ -31,16 +31,11 @@ import DateTimePicker, {
 } from '@react-native-community/datetimepicker';
 import {AnyLog, Category} from '../types/log';
 import {MainTabParamList} from '../types/navigation';
-import {Svg, Path} from 'react-native-svg'; // NEW: For the dropdown icon
+import BabyIcon from '../assets/icons/baby.svg';
 
 // --- Helper Components & Constants ---
 
-// NEW: A simple chevron down icon for the baby selector
-const DropdownIcon = () => (
-  <Svg width="20" height="20" viewBox="0 0 24 24">
-    <Path d="M7 10l5 5 5-5z" fill="#6b9ac4" />
-  </Svg>
-);
+//
 
 const typeTranslations: {[key: string]: string} = {
   weight: 'Kilo',
@@ -285,7 +280,7 @@ const TrackingScreen = () => {
     Alert.alert(title, message || 'Detay bulunamadı');
   };
 
-  const renderLogItem = ({item}: {item: AnyLog}) => {
+  const renderLogItem = ({item, index}: {item: AnyLog; index: number}) => {
     const middleCell = (() => {
       switch (item.category) {
         case 'development':
@@ -302,7 +297,9 @@ const TrackingScreen = () => {
     })();
 
     return (
-      <Pressable style={styles.tableRow} onPress={() => showLogDetails(item)}>
+      <Pressable
+        style={[styles.tableRow, index % 2 === 1 && styles.tableRowAlt]}
+        onPress={() => showLogDetails(item)}>
         <Text style={[styles.cellType]} numberOfLines={1}>
           {typeTranslations[item.type] || item.type}
         </Text>
@@ -321,7 +318,7 @@ const TrackingScreen = () => {
           key={cat}
           style={[styles.tab, activeCategory === cat && styles.tabActive]}
           onPress={() => setActiveCategory(cat)}>
-          <Text style={styles.tabText}>
+          <Text style={[styles.tabText, activeCategory === cat && styles.tabTextActive]}>
             {cat === 'development' ? 'Gelişim' : cat === 'routine' ? 'Rutin' : 'Sağlık'}
           </Text>
         </TouchableOpacity>
@@ -382,13 +379,7 @@ const TrackingScreen = () => {
       )}
       <BabySelectorModal />
 
-      {/* NEW: Pressable Header to open baby selector */}
-      <TouchableOpacity
-        style={styles.headerContainer}
-        onPress={() => setBabySelectorVisible(true)}>
-        <Text style={styles.header}>{currentBaby.name} Bilgileri: </Text>
-        <DropdownIcon />
-      </TouchableOpacity>
+      {/* Removed top header title as per request */}
       
       <CategoryTabs />
       {filteredLogs.length > 0 ? (
@@ -419,6 +410,9 @@ const TrackingScreen = () => {
       <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.babyFab} onPress={() => setBabySelectorVisible(true)}>
+        <BabyIcon width={26} height={26} />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -427,11 +421,35 @@ const styles = StyleSheet.create({
   // --- Existing styles are preserved ---
   container: {flex: 1, backgroundColor: '#f8f9fa'},
   centered: {flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20},
-  header: {fontSize: 22, fontWeight: 'bold', paddingVertical: 20, paddingHorizontal: 10},
-  tabContainer: {flexDirection: 'row', justifyContent: 'space-around', backgroundColor: '#fff', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#eee'},
-  tab: {padding: 10, borderRadius: 5},
-  tabActive: {backgroundColor: '#e5d4f1'},
-  tabText: {fontWeight: 'bold'},
+  header: {fontSize: 22, fontWeight: '900', paddingVertical: 20, paddingHorizontal: 10},
+  tabContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    marginTop: 6,
+    marginBottom: 8,
+    backgroundColor: 'transparent',
+  },
+  tab: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
+    marginHorizontal: 4,
+    // Shadow for iOS
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.15,
+    shadowRadius: 3.84,
+    // Elevation for Android
+    elevation: 3,
+  },
+  tabActive: {
+    backgroundColor: '#6b9ac4',
+  },
+  tabText: {fontWeight: 'bold', color: '#333'},
+  tabTextActive: {color: '#ffffff'},
     // Old card styles (kept for reference, not used by table)
     logItem: {backgroundColor: '#fff', padding: 15, marginVertical: 8, marginHorizontal: 16, borderRadius: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOffset: {width: 0, height: 1}, shadowOpacity: 0.2, shadowRadius: 1.41},
     logType: {fontSize: 16, fontWeight: 'bold'},
@@ -444,13 +462,13 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       backgroundColor: '#ffffff',
       borderBottomWidth: 1,
-      borderBottomColor: '#eee',
+      borderBottomColor: '#ccc',
       paddingVertical: 10,
       paddingHorizontal: 16,
     },
-    headerCellType: {flex: 1, fontWeight: 'bold'},
-    headerCellValue: {flex: 1.5, textAlign: 'center', fontWeight: 'bold'},
-    headerCellDate: {flex: 1, textAlign: 'right', fontWeight: 'bold'},
+    headerCellType: {flex: 1, fontWeight: '800'},
+    headerCellValue: {flex: 1.5, textAlign: 'center', fontWeight: '800'},
+    headerCellDate: {flex: 1, textAlign: 'right', fontWeight: '800'},
     tableRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -460,11 +478,30 @@ const styles = StyleSheet.create({
       borderBottomWidth: 1,
       borderBottomColor: '#f0f0f0',
     },
+    tableRowAlt: {
+      backgroundColor: '#eeeeee',
+    },
     cellType: {flex: 1, fontSize: 14, color: '#333'},
     cellValue: {flex: 1.5, fontSize: 14, color: '#333', textAlign: 'center'},
     cellDate: {flex: 1, fontSize: 12, color: 'gray', textAlign: 'right'},
   fab: {position: 'absolute', width: 56, height: 56, alignItems: 'center', justifyContent: 'center', right: 20, bottom: 20, backgroundColor: '#6b9ac4', borderRadius: 28, elevation: 8},
   fabIcon: {fontSize: 24, color: 'white'},
+  babyFab: {
+    position: 'absolute',
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    left: 20,
+    bottom: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 28,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
   modalContainer: {flex: 1, paddingTop: 40, paddingHorizontal: 20},
   modalTitle: {fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center'},
   modalLabel: {fontSize: 16, fontWeight: 'bold', marginTop: 15, marginBottom: 5},
