@@ -97,7 +97,6 @@ const GuidesScreen = ({navigation}: GuidesScreenProps): React.JSX.Element => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Faydalı Bilgiler</Text>
       <FlatList
         data={GUIDES_DATA}
         renderItem={renderGuideItem}
@@ -112,13 +111,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    padding: 20,
-    textAlign: 'center',
-    backgroundColor: '#fff',
   },
   itemContainer: {
     backgroundColor: '#fff',
