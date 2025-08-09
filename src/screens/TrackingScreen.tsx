@@ -253,6 +253,13 @@ const TrackingScreen = () => {
     };
   }, [currentBaby, isFocused]);
 
+  // Sync active category when navigating with a specific initialCategory
+  useEffect(() => {
+    if (isFocused && route.params?.initialCategory) {
+      setActiveCategory(route.params.initialCategory);
+    }
+  }, [isFocused, route.params?.initialCategory]);
+
   const filteredLogs = useMemo(
     () => logs.filter(log => log.category === activeCategory),
     [logs, activeCategory],

@@ -11,7 +11,7 @@ import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, ActivityIndicator} from 'react-native';
 import PaginationDots from './PaginationDots';
 import firestore from '@react-native-firebase/firestore';
-import {useNavigation, CompositeNavigationProp} from '@react-navigation/native';
+import {useNavigation, CompositeNavigationProp, useIsFocused} from '@react-navigation/native';
 import {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {Baby} from '../context/BabyContext'; // Correct import for Baby type
@@ -34,6 +34,7 @@ interface BabyCardProps {
 // --- Main Component ---
 const BabyCard: React.FC<BabyCardProps> = ({baby, pagination}) => {
   const navigation = useNavigation<BabyCardNavigationProp>();
+  const isFocused = useIsFocused();
 
   // State to hold the latest values for each metric
   const [latestWeight, setLatestWeight] = useState<string | null>(null);
@@ -50,33 +51,60 @@ const BabyCard: React.FC<BabyCardProps> = ({baby, pagination}) => {
   });
 
   // This effect hook fetches the latest log for each metric.
+  // Uses only a `where` filter to avoid requiring composite indexes.
+  // Selects the newest item client-side by comparing `createdAt`.
   useEffect(() => {
-    // Reset states when baby changes
+    if (!isFocused) {
+      return;
+    }
+    // Reset states when baby changes or screen focus changes
     setLoadingStates({ weight: true, height: true, vaccine: true, doctor: true });
     setLatestWeight(null); setLatestHeight(null); setLatestVaccine(null); setLatestDoctorVisit(null);
-    
+
     const fetchLatestLog = (
       collection: string,
       type: string,
       setter: (value: string | null) => void,
       loaderKey: keyof typeof loadingStates
     ) => {
-      return firestore()
-        .collection('babies').doc(baby.id).collection(collection)
-        .where('type', '==', type)
-        .orderBy('createdAt', 'desc')
-        .limit(1)
-        .onSnapshot(snapshot => {
-          if (!snapshot.empty) {
-            const docData = snapshot.docs[0].data();
-            if(type === 'weight') setter(`${docData.value} kg`);
-            else if (type === 'height') setter(`${docData.value} cm`);
-            else setter(docData.eventName);
-          } else {
-            setter('Kayıt Yok');
-          }
-          setLoadingStates(prev => ({ ...prev, [loaderKey]: false }));
-        },_ => setLoadingStates(prev => ({ ...prev, [loaderKey]: false })));
+      try {
+        return firestore()
+          .collection('babies').doc(baby.id).collection(collection)
+          .where('type', '==', type)
+          // No orderBy to avoid composite index; we pick latest locally
+          .onSnapshot(
+            snapshot => {
+              if (!snapshot.empty) {
+                // Find newest by createdAt
+                let newestDoc = snapshot.docs[0];
+                let newestTime = (newestDoc.data().createdAt?.toMillis?.() ?? 0) as number;
+                for (const d of snapshot.docs) {
+                  const t = (d.data().createdAt?.toMillis?.() ?? 0) as number;
+                  if (t > newestTime) {
+                    newestDoc = d;
+                    newestTime = t;
+                  }
+                }
+                const docData: any = newestDoc.data();
+                if (type === 'weight') setter(`${docData.value} kg`);
+                else if (type === 'height') setter(`${docData.value} cm`);
+                else setter(docData.eventName);
+              } else {
+                setter('Kayıt Yok');
+              }
+              setLoadingStates(prev => ({ ...prev, [loaderKey]: false }));
+            },
+            error => {
+              console.error(`📌 BabyCard onSnapshot error (${collection}/${type}):`, error);
+              setLoadingStates(prev => ({ ...prev, [loaderKey]: false }));
+            }
+          );
+      } catch (error) {
+        console.error(`📌 BabyCard listener setup failed (${collection}/${type}):`, error);
+        // Ensure loading flag is cleared even if listener failed to attach
+        setLoadingStates(prev => ({ ...prev, [loaderKey]: false }));
+        return () => {};
+      }
     };
 
     const unsubscribers = [
@@ -87,7 +115,7 @@ const BabyCard: React.FC<BabyCardProps> = ({baby, pagination}) => {
     ];
 
     return () => unsubscribers.forEach(unsub => unsub());
-  }, [baby]);
+  }, [baby, isFocused]);
 
   const calculateAge = (dateOfBirth: Date): string => {
     const today = new Date();

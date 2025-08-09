@@ -10,6 +10,7 @@
 import React, {useState} from 'react';
 import {View, StyleSheet, FlatList, Dimensions, Text} from 'react-native';
 import {useBaby, Baby} from '../context/BabyContext';
+import {useIsFocused} from '@react-navigation/native';
 import BabyCard from '../components/BabyCard';
 import AddBabyCard from '../components/AddBabyCard'; // Import the new card
 
@@ -20,6 +21,7 @@ const ADD_BABY_ITEM = {id: 'add_baby_card', name: 'Add Baby'};
 
 const HomeScreen = () => {
   const {babies, loading} = useBaby();
+  const isFocused = useIsFocused();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // We create a new data source that includes the real babies plus our special item.
@@ -55,6 +57,7 @@ const HomeScreen = () => {
         data={listData}
         renderItem={renderItem}
         keyExtractor={item => item.id}
+        extraData={isFocused}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
