@@ -84,6 +84,10 @@ const AIScreen = (): React.JSX.Element => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={90}
     >
+      {/* Coming soon overlay */}
+      <View pointerEvents="none" style={styles.comingSoonOverlay}>
+        <Text style={styles.comingSoonText}>Çok yakında</Text>
+      </View>
       {/* Scrollable area for displaying the chat history */}
       <ScrollView
         style={styles.chatContainer}
@@ -111,12 +115,11 @@ const AIScreen = (): React.JSX.Element => {
           value={inputValue}
           onChangeText={setInputValue}
           placeholder="Sorunuzu buraya yazın..."
-          editable={!loading} // Disable input while AI is "thinking".
+          editable={false}
         />
         <TouchableOpacity 
-          style={[styles.sendButton, loading && styles.sendButtonDisabled]} 
-          onPress={handleSend} 
-          disabled={loading}
+          style={[styles.sendButton, styles.sendButtonDisabled]} 
+          disabled={true}
           accessibilityLabel="Send message"
         >
           <SendIcon width={20} height={20} stroke="#fff" />
@@ -131,6 +134,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  comingSoonOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  comingSoonText: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#6b6b6b',
   },
   chatContainer: {
     flex: 1,

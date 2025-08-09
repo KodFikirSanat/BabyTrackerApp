@@ -9,7 +9,8 @@
  */
 
 import React, {useEffect} from 'react';
-import {NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer, DefaultTheme, Theme} from '@react-navigation/native';
+import {StatusBar} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import firestore from '@react-native-firebase/firestore';
@@ -96,11 +97,23 @@ const AppContent = () => {
  * The root component setting up providers and the navigation container.
  */
 function App(): React.JSX.Element {
+  const LightTheme: Theme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: '#ffffff',
+      card: '#ffffff',
+      text: '#000000',
+      border: '#E5E7EB',
+    },
+  };
+
   return (
     <SafeAreaProvider>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       <AuthProvider>
         <BabyProvider>
-          <NavigationContainer>
+          <NavigationContainer theme={LightTheme}>
             <AppContent />
           </NavigationContainer>
         </BabyProvider>
