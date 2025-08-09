@@ -9,6 +9,7 @@
 
 import React from 'react';
 import {View, StyleSheet, TouchableOpacity} from 'react-native';
+import PaginationDots from './PaginationDots';
 import {useNavigation, CompositeNavigationProp} from '@react-navigation/native';
 import {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
@@ -28,7 +29,11 @@ type AddBabyCardNavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList>
 >;
 
-const AddBabyCard: React.FC = () => {
+interface AddBabyCardProps {
+  pagination?: { activeIndex: number; count: number };
+}
+
+const AddBabyCard: React.FC<AddBabyCardProps> = ({pagination}) => {
   const navigation = useNavigation<AddBabyCardNavigationProp>();
 
   const handlePress = () => {
@@ -38,6 +43,9 @@ const AddBabyCard: React.FC = () => {
   return (
     <TouchableOpacity style={styles.card} onPress={handlePress}>
       <PlusIcon />
+      {!!pagination && (
+        <PaginationDots count={pagination.count} activeIndex={pagination.activeIndex} />
+      )}
     </TouchableOpacity>
   );
 };

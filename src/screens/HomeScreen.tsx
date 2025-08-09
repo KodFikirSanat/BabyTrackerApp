@@ -7,7 +7,7 @@
  * @format
  */
 
-import React from 'react';
+import React, {useState} from 'react';
 import {View, StyleSheet, FlatList, Dimensions, Text} from 'react-native';
 import {useBaby, Baby} from '../context/BabyContext';
 import BabyCard from '../components/BabyCard';
@@ -20,17 +20,24 @@ const ADD_BABY_ITEM = {id: 'add_baby_card', name: 'Add Baby'};
 
 const HomeScreen = () => {
   const {babies, loading} = useBaby();
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // We create a new data source that includes the real babies plus our special item.
   // The type is broadened to include our special object's shape.
   const listData: (Baby | typeof ADD_BABY_ITEM)[] = [...babies, ADD_BABY_ITEM];
 
-  const renderItem = ({item}: {item: Baby | typeof ADD_BABY_ITEM}) => (
-    <View style={styles.cardContainer}>
-      {/* Conditionally render the correct card based on the item's ID */}
-      {item.id === 'add_baby_card' ? <AddBabyCard /> : <BabyCard baby={item as Baby} />}
-    </View>
-  );
+  const renderItem = ({item, index}: {item: Baby | typeof ADD_BABY_ITEM; index: number}) => {
+    const pagination = { activeIndex: currentIndex, count: listData.length };
+    return (
+      <View style={styles.cardContainer}>
+        {item.id === 'add_baby_card' ? (
+          <AddBabyCard pagination={pagination} />
+        ) : (
+          <BabyCard baby={item as Baby} pagination={pagination} />
+        )}
+      </View>
+    );
+  };
 
   if (loading) {
     return (
@@ -55,6 +62,12 @@ const HomeScreen = () => {
         snapToInterval={screenWidth}
         snapToAlignment="center"
         contentContainerStyle={styles.listContentContainer}
+        onMomentumScrollEnd={e => {
+          const index = Math.round(
+            e.nativeEvent.contentOffset.x / screenWidth,
+          );
+          setCurrentIndex(index);
+        }}
       />
     </View>
   );

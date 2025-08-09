@@ -9,6 +9,7 @@
 
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, ActivityIndicator} from 'react-native';
+import PaginationDots from './PaginationDots';
 import firestore from '@react-native-firebase/firestore';
 import {useNavigation, CompositeNavigationProp} from '@react-navigation/native';
 import {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
@@ -35,10 +36,11 @@ type BabyCardNavigationProp = CompositeNavigationProp<
 
 interface BabyCardProps {
   baby: Baby;
+  pagination?: { activeIndex: number; count: number };
 }
 
 // --- Main Component ---
-const BabyCard: React.FC<BabyCardProps> = ({baby}) => {
+const BabyCard: React.FC<BabyCardProps> = ({baby, pagination}) => {
   const navigation = useNavigation<BabyCardNavigationProp>();
 
   // State to hold the latest values for each metric
@@ -147,6 +149,9 @@ const BabyCard: React.FC<BabyCardProps> = ({baby}) => {
           onPress={() => handleMetricPress('health')}
         />
       </View>
+      {!!pagination && (
+        <PaginationDots count={pagination.count} activeIndex={pagination.activeIndex} />
+      )}
     </View>
   );
 };

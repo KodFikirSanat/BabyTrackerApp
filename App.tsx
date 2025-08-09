@@ -9,7 +9,6 @@
  */
 
 import React, {useEffect} from 'react';
-import {Image} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -24,14 +23,11 @@ import SplashScreen from './src/screens/SplashScreen';
 import EntryScreen from './src/screens/EntryScreen';
 import AddBabyScreen from './src/screens/AddBabyScreen';
 import MainTabNavigator from './src/navigation/MainTabNavigator';
-import HeaderRightMenu from './src/components/HeaderRightMenu';
-import HeaderLeftBack from './src/components/HeaderLeftBack';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 /**
  * Renders the correct screen within a single, stable navigator based on app state.
- * This component also defines the global header for the entire application.
  */
 const AppContent = () => {
   const {user, loading: authLoading} = useAuth();
@@ -61,15 +57,7 @@ const AppContent = () => {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerTitleAlign: 'center',
-        headerRight: () => <HeaderRightMenu />,
-        headerLeft: () => <HeaderLeftBack />,
-        headerTitle: () => (
-          <Image
-            source={require('./src/assets/babywise/head_logo.jpg')}
-            style={{width: 120, height: 40, resizeMode: 'contain'}}
-          />
-        ),
+        headerShown: false,
       }}>
       {authLoading || babiesLoading ? (
         <Stack.Screen
@@ -91,7 +79,6 @@ const AppContent = () => {
         />
       ) : (
         <>
-          {/* The MainTabs screen will now inherit the universal header from the navigator */}
           <Stack.Screen name="MainTabs" component={MainTabNavigator} />
           {/* AddBaby screen should always be available for navigation */}
           <Stack.Screen

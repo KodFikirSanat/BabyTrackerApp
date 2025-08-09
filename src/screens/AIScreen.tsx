@@ -12,9 +12,10 @@
 
 import React, {useState, useRef} from 'react';
 import {
-  View, Text, TextInput, Button, StyleSheet,
-  ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform
+  View, Text, TextInput, StyleSheet,
+  ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, TouchableOpacity
 } from 'react-native';
+import SendIcon from '../assets/icons/send.svg';
 
 /**
  * @interface Message
@@ -83,8 +84,6 @@ const AIScreen = (): React.JSX.Element => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={90}
     >
-      <Text style={styles.title}>Yapay Zeka Danışmanı</Text>
-      
       {/* Scrollable area for displaying the chat history */}
       <ScrollView
         style={styles.chatContainer}
@@ -114,7 +113,14 @@ const AIScreen = (): React.JSX.Element => {
           placeholder="Sorunuzu buraya yazın..."
           editable={!loading} // Disable input while AI is "thinking".
         />
-        <Button title="Gönder" onPress={handleSend} disabled={loading} />
+        <TouchableOpacity 
+          style={[styles.sendButton, loading && styles.sendButtonDisabled]} 
+          onPress={handleSend} 
+          disabled={loading}
+          accessibilityLabel="Send message"
+        >
+          <SendIcon width={20} height={20} stroke="#fff" />
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -125,13 +131,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
   },
   chatContainer: {
     flex: 1,
@@ -170,6 +169,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 15,
     marginRight: 10,
+  },
+  sendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#6b9ac4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#ccc',
   },
 });
 
