@@ -263,33 +263,54 @@ const TrackingScreen = () => {
     [logs, activeCategory],
   );
 
+  const showLogDetails = (item: AnyLog) => {
+    const title = typeTranslations[item.type] || item.type;
+    const createdAtStr = item.createdAt?.toDate().toLocaleString() || '';
+    let message = '';
+    if (item.category === 'development') {
+      message += `Değer: ${item.value} ${item.type === 'weight' ? 'kg' : 'cm'}`;
+    } else if (item.category === 'routine') {
+      if (typeof item.durationInMinutes === 'number') {
+        message += `Süre: ${item.durationInMinutes} dk`;
+      }
+    } else if (item.category === 'health') {
+      message += `Olay: ${item.eventName}`;
+    }
+    if (item.notes) {
+      message += `\nNot: ${item.notes}`;
+    }
+    if (createdAtStr) {
+      message += `\nKayıt Tarihi: ${createdAtStr}`;
+    }
+    Alert.alert(title, message || 'Detay bulunamadı');
+  };
+
   const renderLogItem = ({item}: {item: AnyLog}) => {
-    // ... (This function's code remains unchanged)
-    const renderContent = () => {
+    const middleCell = (() => {
       switch (item.category) {
         case 'development':
-          return <Text style={styles.logValue}>{`${item.value} ${item.type === 'weight' ? 'kg' : 'cm'}`}</Text>;
+          return `${item.value} ${item.type === 'weight' ? 'kg' : 'cm'}`;
         case 'routine':
-          if (typeof item.durationInMinutes === 'number') {
-            return <Text style={styles.logValue}>{`Süre: ${item.durationInMinutes} dk`}</Text>;
-          }
-          return null;
+          return typeof item.durationInMinutes === 'number'
+            ? `${item.durationInMinutes} dk`
+            : '';
         case 'health':
-          return <Text style={styles.logValue}>{item.eventName}</Text>;
+          return item.eventName;
         default:
-          return null;
+          return '';
       }
-    };
+    })();
 
     return (
-      <View style={styles.logItem}>
-        <View style={{flex: 1}}>
-          <Text style={styles.logType}>{typeTranslations[item.type] || item.type}</Text>
-          {item.notes ? <Text style={styles.logNotes}>{item.notes}</Text> : null}
-        </View>
-        <View style={{flex: 1.5, alignItems: 'center'}}>{renderContent()}</View>
-        <Text style={styles.logDate}>{item.createdAt?.toDate().toLocaleDateString()}</Text>
-      </View>
+      <Pressable style={styles.tableRow} onPress={() => showLogDetails(item)}>
+        <Text style={[styles.cellType]} numberOfLines={1}>
+          {typeTranslations[item.type] || item.type}
+        </Text>
+        <Text style={[styles.cellValue]} numberOfLines={1}>{middleCell}</Text>
+        <Text style={[styles.cellDate]} numberOfLines={1}>
+          {item.createdAt?.toDate().toLocaleDateString()}
+        </Text>
+      </Pressable>
     );
   };
 
@@ -371,7 +392,25 @@ const TrackingScreen = () => {
       
       <CategoryTabs />
       {filteredLogs.length > 0 ? (
-        <FlatList data={filteredLogs} renderItem={renderLogItem} keyExtractor={item => item.id} />
+        <FlatList
+          data={filteredLogs}
+          renderItem={renderLogItem}
+          keyExtractor={item => item.id}
+          ListHeaderComponent={() => (
+            <View style={styles.tableHeader}>
+              <Text style={[styles.headerCellType]}>Tür</Text>
+              <Text style={[styles.headerCellValue]}>
+                {activeCategory === 'development'
+                  ? 'Değer'
+                  : activeCategory === 'routine'
+                  ? 'Süre'
+                  : 'Olay'}
+              </Text>
+              <Text style={[styles.headerCellDate]}>Tarih</Text>
+            </View>
+          )}
+          stickyHeaderIndices={[0]}
+        />
       ) : (
         <View style={styles.centered}>
           <Text>Bu kategori için henüz kayıt yok.</Text>
@@ -393,11 +432,37 @@ const styles = StyleSheet.create({
   tab: {padding: 10, borderRadius: 5},
   tabActive: {backgroundColor: '#e5d4f1'},
   tabText: {fontWeight: 'bold'},
-  logItem: {backgroundColor: '#fff', padding: 15, marginVertical: 8, marginHorizontal: 16, borderRadius: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOffset: {width: 0, height: 1}, shadowOpacity: 0.2, shadowRadius: 1.41},
-  logType: {fontSize: 16, fontWeight: 'bold'},
-  logNotes: {fontSize: 12, color: 'gray', fontStyle: 'italic', marginTop: 4},
-  logValue: {fontSize: 14, color: '#333', flex: 1.5, textAlign: 'center'},
-  logDate: {fontSize: 12, color: 'gray', flex: 1, textAlign: 'right'},
+    // Old card styles (kept for reference, not used by table)
+    logItem: {backgroundColor: '#fff', padding: 15, marginVertical: 8, marginHorizontal: 16, borderRadius: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOffset: {width: 0, height: 1}, shadowOpacity: 0.2, shadowRadius: 1.41},
+    logType: {fontSize: 16, fontWeight: 'bold'},
+    logNotes: {fontSize: 12, color: 'gray', fontStyle: 'italic', marginTop: 4},
+    logValue: {fontSize: 14, color: '#333', flex: 1.5, textAlign: 'center'},
+    logDate: {fontSize: 12, color: 'gray', flex: 1, textAlign: 'right'},
+
+    // Table styles
+    tableHeader: {
+      flexDirection: 'row',
+      backgroundColor: '#ffffff',
+      borderBottomWidth: 1,
+      borderBottomColor: '#eee',
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+    },
+    headerCellType: {flex: 1, fontWeight: 'bold'},
+    headerCellValue: {flex: 1.5, textAlign: 'center', fontWeight: 'bold'},
+    headerCellDate: {flex: 1, textAlign: 'right', fontWeight: 'bold'},
+    tableRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#fff',
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: '#f0f0f0',
+    },
+    cellType: {flex: 1, fontSize: 14, color: '#333'},
+    cellValue: {flex: 1.5, fontSize: 14, color: '#333', textAlign: 'center'},
+    cellDate: {flex: 1, fontSize: 12, color: 'gray', textAlign: 'right'},
   fab: {position: 'absolute', width: 56, height: 56, alignItems: 'center', justifyContent: 'center', right: 20, bottom: 20, backgroundColor: '#6b9ac4', borderRadius: 28, elevation: 8},
   fabIcon: {fontSize: 24, color: 'white'},
   modalContainer: {flex: 1, paddingTop: 40, paddingHorizontal: 20},

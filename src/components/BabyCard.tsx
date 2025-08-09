@@ -17,17 +17,9 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {Baby} from '../context/BabyContext'; // Correct import for Baby type
 import {Category} from '../types/log';
 import {RootStackParamList, MainTabParamList} from '../types/navigation';
-import {Svg, Path} from 'react-native-svg';
+import BabyIcon from '../assets/icons/baby.svg';
 
 // --- Default Icons & Types ---
-const DefaultProfileIcon = () => (
-  <Svg width="80" height="80" viewBox="0 0 24 24">
-    <Path
-      d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-      fill="#a9a9a9"
-    />
-  </Svg>
-);
 
 type BabyCardNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Home'>,
@@ -118,7 +110,7 @@ const BabyCard: React.FC<BabyCardProps> = ({baby, pagination}) => {
   return (
     <View style={styles.card}>
       <View style={[styles.profilePicCircle, {borderColor: genderColor}]}>
-        <DefaultProfileIcon />
+        <BabyIcon width={80} height={80} />
       </View>
       <Text style={styles.name}>{baby.name}</Text>
       <Text style={styles.age}>{calculateAge(baby.dateOfBirth.toDate())}</Text>
