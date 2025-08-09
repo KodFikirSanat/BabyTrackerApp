@@ -1,7 +1,7 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
-apply plugin: 'com.google.gms.google-services'
+// Google services plugin will be applied conditionally at the end of this file
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -70,6 +70,8 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'org.webkit:android-jsc:+'
 
+def hasSigningProps = project.hasProperty('MYAPP_RELEASE_STORE_FILE') && project.hasProperty('MYAPP_RELEASE_STORE_PASSWORD') && project.hasProperty('MYAPP_RELEASE_KEY_ALIAS') && project.hasProperty('MYAPP_RELEASE_KEY_PASSWORD') && MYAPP_RELEASE_STORE_FILE && MYAPP_RELEASE_STORE_PASSWORD && MYAPP_RELEASE_KEY_ALIAS && MYAPP_RELEASE_KEY_PASSWORD
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -91,7 +93,7 @@ android {
             keyPassword 'android'
         }
         release {
-            if (project.hasProperty('MYAPP_RELEASE_STORE_FILE')) {
+            if (hasSigningProps) {
                 storeFile file("../" + MYAPP_RELEASE_STORE_FILE)
                 storePassword MYAPP_RELEASE_STORE_PASSWORD
                 keyAlias MYAPP_RELEASE_KEY_ALIAS
@@ -106,7 +108,9 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.release
+            if (hasSigningProps) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
@@ -125,3 +129,8 @@ dependencies {
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+
+// Apply Google Services plugin only if google-services.json exists, to allow building without Firebase config
+if (file("google-services.json").exists()) {
+    apply plugin: 'com.google.gms.google-services'
+}
