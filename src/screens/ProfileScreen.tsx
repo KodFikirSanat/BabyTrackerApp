@@ -59,6 +59,22 @@ const ProfileScreen = ({navigation}: ProfileScreenNavigationProps): React.JSX.El
     }
   };
 
+  /**
+   * @function confirmLogout
+   * @description Shows a confirmation dialog before signing out.
+   */
+  const confirmLogout = () => {
+    Alert.alert(
+      'Oturumdan çıkılacaktır',
+      undefined,
+      [
+        {text: 'İptal', style: 'cancel'},
+        {text: 'Onayla', style: 'destructive', onPress: handleLogout},
+      ],
+      {cancelable: true},
+    );
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.profilePicCircle}>
@@ -92,7 +108,7 @@ const ProfileScreen = ({navigation}: ProfileScreenNavigationProps): React.JSX.El
           ) : (
             <Button
               title="Çıkış Yap"
-              onPress={handleLogout}
+              onPress={confirmLogout}
               disabled={loading}
               color="#e74c3c"
             />
