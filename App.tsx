@@ -13,8 +13,15 @@ import {NavigationContainer, DefaultTheme, Theme} from '@react-navigation/native
 import {StatusBar} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import firestore from '@react-native-firebase/firestore';
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  arrayUnion,
+} from '@react-native-firebase/firestore';
 import messaging from '@react-native-firebase/messaging';
+import {PermissionsAndroid, Platform} from 'react-native';
 
 import {AuthProvider, useAuth} from './src/context/AuthContext';
 import {BabyProvider, useBaby} from './src/context/BabyContext';
@@ -36,23 +43,49 @@ const AppContent = () => {
 
   useEffect(() => {
     const setupNotifications = async () => {
-      if (user) {
-        try {
-          await messaging().requestPermission();
-          const fcmToken = await messaging().getToken();
-          if (fcmToken) {
-            console.log('📱 FCM Token:', fcmToken);
-            await firestore()
-              .collection('users')
-              .doc(user.uid)
-              .set({fcmToken}, {merge: true});
-          }
-        } catch (error) {
-          console.error('Error setting up notifications:', error);
+      if (!user) return;
+
+      try {
+        // Android 13+ requires runtime POST_NOTIFICATIONS permission
+        if (Platform.OS === 'android') {
+          try {
+            await PermissionsAndroid.request(
+              PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+            );
+          } catch (_) {}
         }
+
+        // Request iOS permission (safe to call on Android as no-op <= API 32)
+        await messaging().requestPermission();
+
+        const saveToken = async (token: string | null) => {
+          if (!token) return;
+          // Store tokens as an array to support multiple devices per user
+          const db = getFirestore();
+          await setDoc(
+            doc(db, 'users', user.uid),
+            {tokens: arrayUnion(token)},
+            {merge: true},
+          );
+        };
+
+        const currentToken = await messaging().getToken();
+        await saveToken(currentToken);
+
+        // Listen for token refresh
+        const unsubscribeTokenRefresh = messaging().onTokenRefresh(saveToken);
+
+        return () => unsubscribeTokenRefresh();
+      } catch (error) {
+        console.error('Error setting up notifications:', error);
       }
     };
-    setupNotifications();
+
+    const unsubscribe = setupNotifications();
+    return () => {
+      // Clean token listener if provided
+      if (typeof unsubscribe === 'function') unsubscribe();
+    };
   }, [user]);
 
   return (

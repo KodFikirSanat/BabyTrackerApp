@@ -11,7 +11,15 @@
  */
 
 import React, {createContext, useContext, useState, useEffect, ReactNode} from 'react';
-import firestore, {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+import {
+  FirebaseFirestoreTypes,
+  getFirestore,
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+} from '@react-native-firebase/firestore';
 import {useAuth} from './AuthContext'; // This context is dependent on the user's authentication state.
 
 /**
@@ -72,47 +80,59 @@ export const BabyProvider = ({children}: {children: ReactNode}): React.JSX.Eleme
       console.log(`🧸⏳ BabyProvider: User detected (${user.uid}). Fetching babies from Firestore...`);
       setLoading(true);
 
-      // Set up a real-time Firestore listener (onSnapshot).
-      // This listener will automatically update when the data changes in the database.
-      // JULES: The .orderBy('createdAt') clause was removed to prevent a crash.
-      // The app was failing because this query requires a composite index in Firestore.
-      // The correct long-term fix is to create this index. The link can be found in the original error logs.
-      // This change ensures the app remains functional, though babies may not be sorted chronologically.
-      const subscriber = firestore()
-        .collection('babies')
-        .where('userId', '==', user.uid)
-        .onSnapshot(
-          querySnapshot => {
-            const userBabies: Baby[] = querySnapshot.docs.map(doc => ({
-              id: doc.id,
-              ...(doc.data() as Omit<Baby, 'id'>),
-            }));
+      // Prefer an ordered query for stable UI; if a required index is missing, gracefully
+      // fall back to an unordered listener and log guidance to create the composite index.
+      const db = getFirestore();
+      const baseQueryRef = query(
+        collection(db, 'babies'),
+        where('userId', '==', user.uid),
+      );
 
-            console.log(`🧸✅ BabyProvider: Firestore update received. Found ${userBabies.length} babies.`);
-            setBabies(userBabies);
+      const handleSnapshot = (querySnapshot: FirebaseFirestoreTypes.QuerySnapshot<FirebaseFirestoreTypes.DocumentData>) => {
+        const userBabies: Baby[] = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...(doc.data() as Omit<Baby, 'id'>),
+        }));
 
-            // Logic to set a default selected baby.
-            const isSelectedBabyStillValid = !!selectedBaby && userBabies.some(b => b.id === selectedBaby.id);
-            if (!isSelectedBabyStillValid && userBabies.length > 0) {
-              console.log(`🧸➡️ BabyProvider: Setting default selected baby to '${userBabies[0].name}'.`);
-              setSelectedBaby(userBabies[0]);
-            } else if (userBabies.length === 0) {
-              console.log('🧸🎨 BabyProvider: No babies found, clearing selected baby.');
-              setSelectedBaby(null);
-            }
-            
+        console.log(`🧸✅ BabyProvider: Firestore update received. Found ${userBabies.length} babies.`);
+        setBabies(userBabies);
+
+        // Logic to set a default selected baby.
+        const isSelectedBabyStillValid = !!selectedBaby && userBabies.some(b => b.id === selectedBaby.id);
+        if (!isSelectedBabyStillValid && userBabies.length > 0) {
+          console.log(`🧸➡️ BabyProvider: Setting default selected baby to '${userBabies[0].name}'.`);
+          setSelectedBaby(userBabies[0]);
+        } else if (userBabies.length === 0) {
+          console.log('🧸🎨 BabyProvider: No babies found, clearing selected baby.');
+          setSelectedBaby(null);
+        }
+
+        setLoading(false);
+      };
+
+      let unsubscribe: undefined | (() => void);
+      const subscribeWithOrder = () => {
+        const orderedQueryRef = query(baseQueryRef, orderBy('createdAt', 'desc'));
+        return onSnapshot(orderedQueryRef, handleSnapshot, err => {
+          // Missing index or other error: fall back without ordering.
+          console.warn(
+            '🧸⚠️ Ordered babies query failed, falling back without order. Consider adding a composite index on (userId ASC, createdAt DESC).',
+            err,
+          );
+          setLoading(true);
+          unsubscribe = onSnapshot(baseQueryRef, handleSnapshot, e => {
+            console.error('🧸❌ BabyProvider: Error fetching babies (fallback):', e);
             setLoading(false);
-          },
-          error => {
-            console.error('🧸❌ BabyProvider: Error fetching babies:', error);
-            setLoading(false);
-          },
-        );
+          });
+        });
+      };
+
+      unsubscribe = subscribeWithOrder();
 
       // Cleanup function to unsubscribe from the listener when the user logs out or the component unmounts.
       return () => {
         console.log('🧸🧹 BabyProvider: Cleaning up Firestore listener for babies.');
-        subscriber();
+        if (unsubscribe) unsubscribe();
       };
     } else {
       // If there is no user (logged out), clear all local baby data.

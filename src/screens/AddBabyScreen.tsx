@@ -14,7 +14,13 @@ import {
   View, Text, TextInput, Button, StyleSheet,
   TouchableOpacity, Alert, Platform, ActivityIndicator
 } from 'react-native';
-import firestore from '@react-native-firebase/firestore';
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  serverTimestamp,
+  Timestamp,
+} from '@react-native-firebase/firestore';
 import DateTimePicker, {DateTimePickerEvent} from '@react-native-community/datetimepicker';
 import {useAuth} from '../context/AuthContext';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
@@ -69,14 +75,15 @@ const AddBabyScreen = (): React.JSX.Element => {
       const babyData = {
         userId: user.uid,
         name: name.trim(),
-        dateOfBirth: firestore.Timestamp.fromDate(dateOfBirth),
+        dateOfBirth: Timestamp.fromDate(dateOfBirth),
         gender: gender,
-        createdAt: firestore.FieldValue.serverTimestamp(),
+        createdAt: serverTimestamp(),
       };
       
       console.log('👶➡️ AddBabyScreen: Saving new baby data to Firestore.');
       // Add the new document to the 'babies' collection.
-      await firestore().collection('babies').add(babyData);
+      const db = getFirestore();
+      await addDoc(collection(db, 'babies'), babyData);
       
       Alert.alert('Başarılı!', 'Bebeğinizin profili başarıyla oluşturuldu.');
       console.log('👶✅ AddBabyScreen.handleAddBaby: Baby profile created successfully.');

@@ -10,7 +10,14 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, ActivityIndicator} from 'react-native';
 import PaginationDots from './PaginationDots';
-import firestore from '@react-native-firebase/firestore';
+import {
+  getFirestore,
+  collection,
+  doc,
+  query,
+  where,
+  onSnapshot,
+} from '@react-native-firebase/firestore';
 import {useNavigation, CompositeNavigationProp, useIsFocused} from '@react-navigation/native';
 import {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
@@ -62,24 +69,36 @@ const BabyCard: React.FC<BabyCardProps> = ({baby, pagination}) => {
     setLatestWeight(null); setLatestHeight(null); setLatestVaccine(null); setLatestDoctorVisit(null);
 
     const fetchLatestLog = (
-      collection: string,
+      collectionName: string,
       type: string,
       setter: (value: string | null) => void,
       loaderKey: keyof typeof loadingStates
     ) => {
       try {
-        return firestore()
-          .collection('babies').doc(baby.id).collection(collection)
-          .where('type', '==', type)
-          // No orderBy to avoid composite index; we pick latest locally
-          .onSnapshot(
-            snapshot => {
+        const db = getFirestore();
+        const logsQuery = query(
+          collection(
+            doc(db, 'babies', baby.id),
+            collectionName,
+          ),
+          where('type', '==', type),
+        );
+        // No orderBy to avoid composite index; we pick latest locally
+        return onSnapshot(
+          logsQuery,
+          snapshot => {
               if (!snapshot.empty) {
-                // Find newest by createdAt
+                // Find newest by createdAt using safe guards for Timestamp
+                const toMillisSafe = (value: any): number => {
+                  if (value && typeof value.toMillis === 'function') {
+                    return value.toMillis();
+                  }
+                  return 0;
+                };
                 let newestDoc = snapshot.docs[0];
-                let newestTime = (newestDoc.data().createdAt?.toMillis?.() ?? 0) as number;
+                let newestTime = toMillisSafe(newestDoc.data().createdAt);
                 for (const d of snapshot.docs) {
-                  const t = (d.data().createdAt?.toMillis?.() ?? 0) as number;
+                  const t = toMillisSafe(d.data().createdAt);
                   if (t > newestTime) {
                     newestDoc = d;
                     newestTime = t;
@@ -93,14 +112,14 @@ const BabyCard: React.FC<BabyCardProps> = ({baby, pagination}) => {
                 setter('Kayıt Yok');
               }
               setLoadingStates(prev => ({ ...prev, [loaderKey]: false }));
-            },
-            error => {
-              console.error(`📌 BabyCard onSnapshot error (${collection}/${type}):`, error);
+          },
+          error => {
+              console.error(`📌 BabyCard onSnapshot error (${collectionName}/${type}):`, error);
               setLoadingStates(prev => ({ ...prev, [loaderKey]: false }));
-            }
-          );
+          }
+        );
       } catch (error) {
-        console.error(`📌 BabyCard listener setup failed (${collection}/${type}):`, error);
+        console.error(`📌 BabyCard listener setup failed (${collectionName}/${type}):`, error);
         // Ensure loading flag is cleared even if listener failed to attach
         setLoadingStates(prev => ({ ...prev, [loaderKey]: false }));
         return () => {};

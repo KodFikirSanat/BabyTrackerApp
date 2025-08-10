@@ -11,7 +11,7 @@
 import React, {useState} from 'react';
 import {View, Text, Button, StyleSheet, Alert, ActivityIndicator} from 'react-native';
 import {Svg, Path} from 'react-native-svg';
-import auth from '@react-native-firebase/auth';
+import {getAuth, signOut} from '@react-native-firebase/auth';
 import {useAuth} from '../context/AuthContext';
 import {ProfileScreenNavigationProps} from '../types/navigation';
 
@@ -46,7 +46,8 @@ const ProfileScreen = ({navigation}: ProfileScreenNavigationProps): React.JSX.El
     console.log(`👤➡️ ProfileScreen.handleLogout: Attempting to log out user: ${user?.email}`);
     setLoading(true); // Disable button
     try {
-      await auth().signOut();
+      const authInstance = getAuth();
+      await signOut(authInstance);
       console.log('👤✅ ProfileScreen.handleLogout: User signed out successfully.');
       // Navigation is handled automatically by the AuthContext listener.
     } catch (error) {

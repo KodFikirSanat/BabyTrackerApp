@@ -23,7 +23,17 @@ import {
   Platform,
   Pressable, // NEW: For the baby selector modal
 } from 'react-native';
-import firestore from '@react-native-firebase/firestore';
+import {
+  getFirestore,
+  collection,
+  doc,
+  addDoc,
+  serverTimestamp,
+  Timestamp,
+  query,
+  orderBy,
+  onSnapshot,
+} from '@react-native-firebase/firestore';
 import {useBaby, Baby} from '../context/BabyContext';
 import {useIsFocused, useRoute, RouteProp} from '@react-navigation/native';
 import DateTimePicker, {
@@ -79,7 +89,7 @@ const AddLogModal = ({
     setLoading(true);
     let data: any = {
       type: logType,
-      createdAt: firestore.FieldValue.serverTimestamp(),
+      createdAt: serverTimestamp(),
       notes: notes,
     };
     let collectionName = `${logCategory}Logs`;
@@ -90,7 +100,13 @@ const AddLogModal = ({
         setLoading(false);
         return;
       }
-      data.value = parseFloat(logValue);
+      const numeric = parseFloat(logValue.replace(',', '.'));
+      if (Number.isNaN(numeric) || !Number.isFinite(numeric)) {
+        Alert.alert('Hata', 'Lütfen geçerli bir sayı girin.');
+        setLoading(false);
+        return;
+      }
+      data.value = numeric;
     } else if (logCategory === 'health') {
       if (!logEventName) {
         Alert.alert('Hata', 'Lütfen olay adını girin (örn: KPA Aşısı).');
@@ -98,12 +114,13 @@ const AddLogModal = ({
         return;
       }
       data.eventName = logEventName;
-      data.eventDate = firestore.Timestamp.fromDate(logDate);
+      data.eventDate = Timestamp.fromDate(logDate);
     }
 
     try {
       console.log(`📈➡️ Saving log to babies/${babyId}/${collectionName}...`);
-      await firestore().collection('babies').doc(babyId).collection(collectionName).add(data);
+      const db = getFirestore();
+      await addDoc(collection(doc(db, 'babies', babyId), collectionName), data);
       Alert.alert('Başarılı', 'Kayıt başarıyla eklendi.');
       onClose();
     } catch (error) {
@@ -174,6 +191,7 @@ const AddLogModal = ({
 type TrackingScreenRouteProp = RouteProp<MainTabParamList, 'Tracking'>;
 
 const TrackingScreen = () => {
+  const BABY_TITLE_FONT_SIZE = 16;
   const {babies, selectedBaby: globalSelectedBaby} = useBaby();
   const route = useRoute<TrackingScreenRouteProp>();
   const isFocused = useIsFocused();
@@ -215,20 +233,21 @@ const TrackingScreen = () => {
     setLoading(true);
     console.log(`📈⏳ Subscribing to logs for local baby ID: ${currentBaby.id}`);
     const collections = ['developmentLogs', 'routineLogs', 'healthLogs'];
+    const db = getFirestore();
     const unsubscribers = collections.map(collectionName => {
-      return firestore()
-        .collection('babies')
-        .doc(currentBaby.id)
-        .collection(collectionName)
-        .orderBy('createdAt', 'desc')
-        .onSnapshot(
-          snapshot => {
+      const q = query(
+        collection(doc(db, 'babies', currentBaby.id), collectionName),
+        orderBy('createdAt', 'desc'),
+      );
+      return onSnapshot(
+        q,
+        snapshot => {
             console.log(`📈✅ Received update from ${collectionName}.`);
-            const fetchedLogs: AnyLog[] = snapshot.docs.map(doc => ({
-              id: doc.id,
+            const fetchedLogs: AnyLog[] = snapshot.docs.map((d: any) => ({
+              id: d.id,
               category: collectionName.replace('Logs', '') as Category,
-              ...doc.data(),
-            } as AnyLog));
+              ...(d.data() as any),
+            }) as AnyLog);
             setLogs(prevLogs => {
               const otherLogs = prevLogs.filter(
                 log => log.category !== collectionName.replace('Logs', ''),
@@ -245,7 +264,7 @@ const TrackingScreen = () => {
             console.error(`📈❌ Error fetching ${collectionName}:`, error);
             setLoading(false);
           },
-        );
+      );
     });
     return () => {
       console.log(`📈🧹 Unsubscribing from Firestore listeners.`);
@@ -388,8 +407,10 @@ const TrackingScreen = () => {
 
       {/* Compact baby title with icon (non-header style) */}
       <View style={styles.headerContainer}>
-        <BabyIcon width={16} height={16} />
-        <Text style={styles.babyNameText}>{currentBaby?.name}</Text>
+        <BabyIcon width={BABY_TITLE_FONT_SIZE} height={BABY_TITLE_FONT_SIZE} />
+        <Text style={styles.babyNameText} numberOfLines={1} ellipsizeMode="tail">
+          {currentBaby?.name}
+        </Text>
       </View>
       
       <CategoryTabs />

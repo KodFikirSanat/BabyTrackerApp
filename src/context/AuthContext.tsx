@@ -10,7 +10,11 @@
  */
 
 import React, {createContext, useContext, useState, useEffect, ReactNode} from 'react';
-import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
+import {
+  FirebaseAuthTypes,
+  getAuth,
+  onAuthStateChanged,
+} from '@react-native-firebase/auth';
 
 /**
  * @interface AuthContextType
@@ -57,7 +61,8 @@ export const AuthProvider = ({children}: {children: ReactNode}): React.JSX.Eleme
     
     // onAuthStateChanged is a real-time listener from Firebase.
     // It returns an `unsubscribe` function which is crucial for cleanup.
-    const subscriber = auth().onAuthStateChanged(userState => {
+    const authInstance = getAuth();
+    const subscriber = onAuthStateChanged(authInstance, userState => {
       // This function is called whenever a user signs in or out.
       console.log(
         `🔒✅ AuthProvider: Auth state changed. User is now: ${userState ? userState.email : 'null'}`

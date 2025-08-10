@@ -92,13 +92,15 @@ export const sendVaccinationReminders = onSchedule(
         }
 
         const userData = userDoc.data();
-        if (!userData || !userData.fcmToken) {
-          logger.warn(`☁️⚠️ User ${userId} does not have an FCM token.`);
+        const tokens: string[] = Array.isArray(userData?.tokens)
+          ? (userData!.tokens as string[])
+          : (userData?.fcmToken ? [userData.fcmToken as string] : []);
+        if (!tokens.length) {
+          logger.warn(`☁️⚠️ User ${userId} does not have any FCM tokens.`);
           continue;
         }
-        const fcmToken = userData.fcmToken;
 
-        // 4. Prepare and send the notification
+        // 4. Prepare and send the notification to all known tokens
         const payload = {
           notification: {
             title: "Aşı Hatırlatıcısı",
@@ -106,14 +108,28 @@ export const sendVaccinationReminders = onSchedule(
               `Yarın ${babyData.name} bebeğinizin ` +
               `${logData.eventName} aşısı var!`,
           },
-          token: fcmToken,
         };
 
         logger.info(
-          `☁️➡️ Sending notification to user ${userId} for baby ${babyData.name}`,
+          `☁️➡️ Sending notification to user ${userId} for baby ${babyData.name} (tokens: ${tokens.length})`,
         );
 
-        await admin.messaging().send(payload);
+        const response = await admin.messaging().sendEachForMulticast({
+          tokens,
+          ...payload,
+        });
+        const invalidTokens: string[] = [];
+        response.responses.forEach((r, idx) => {
+          if (!r.success) invalidTokens.push(tokens[idx]);
+        });
+        if (invalidTokens.length) {
+          logger.warn(
+            `☁️⚠️ Removing ${invalidTokens.length} invalid FCM tokens for user ${userId}.`,
+          );
+          await db.collection('users').doc(userId).update({
+            tokens: admin.firestore.FieldValue.arrayRemove(...invalidTokens),
+          });
+        }
       }
     } catch (error) {
       logger.error("☁️❌ Error sending vaccination reminders:", error);

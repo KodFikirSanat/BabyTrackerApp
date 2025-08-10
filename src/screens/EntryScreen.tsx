@@ -20,7 +20,11 @@ import {
   TouchableOpacity,
   Image, // Import Image component
 } from 'react-native';
-import auth from '@react-native-firebase/auth';
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from '@react-native-firebase/auth';
 
 /**
  * @name EntryScreen
@@ -43,11 +47,13 @@ const EntryScreen = (): React.JSX.Element => {
     try {
       if (isLogin) {
         console.log('🚪➡️ EntryScreen.handleAuthentication: Attempting to sign in...');
-        await auth().signInWithEmailAndPassword(email, password);
+        const authInstance = getAuth();
+        await signInWithEmailAndPassword(authInstance, email, password);
         console.log('🚪✅ EntryScreen.handleAuthentication: User signed in successfully!');
       } else {
         console.log('🚪➡️ EntryScreen.handleAuthentication: Attempting to create user...');
-        await auth().createUserWithEmailAndPassword(email, password);
+        const authInstance = getAuth();
+        await createUserWithEmailAndPassword(authInstance, email, password);
         console.log('🚪✅ EntryScreen.handleAuthentication: User account created & signed in!');
       }
     } catch (error: any) {
