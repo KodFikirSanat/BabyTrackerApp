@@ -386,7 +386,11 @@ const TrackingScreen = () => {
       )}
       <BabySelectorModal />
 
-      {/* Removed top header title as per request */}
+      {/* Compact baby title with icon (non-header style) */}
+      <View style={styles.headerContainer}>
+        <BabyIcon width={16} height={16} />
+        <Text style={styles.babyNameText}>{currentBaby?.name}</Text>
+      </View>
       
       <CategoryTabs />
       {filteredLogs.length > 0 ? (
@@ -522,6 +526,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 10, // Adjusted padding
   },
+  babyNameText: { marginLeft: 6, fontSize: 16, fontWeight: 'bold', color: '#333' },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
