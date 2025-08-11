@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 20,
   },
   profilePicCircle: {
@@ -295,7 +295,9 @@ const styles = StyleSheet.create({
   },
   headerTextColumn: {
     marginLeft: 16,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    flex: 1,
   },
   title: {
     fontSize: 24,
